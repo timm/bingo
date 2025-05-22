@@ -65,7 +65,7 @@ Command-line actions:
   -h        show help
 """
 from pprint import pformat as say
-import random,math,sys,re
+import urllib.request, random, math, sys, re, os
 
 pick=random.choice
 picks=random.choices
@@ -336,10 +336,21 @@ def show(data, key=lambda z:z.ys.mu):
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {len(node._rows):4}    {(lvl-1) * '|  '}{xplain}" + post)
           
 ### Utils ----------------------------------------------------------------------
-def csv(path):
-  with open(path) as f:
+def moot(fn):
+  if fn.startswith("MOOT/"):
+    cdir = os.path.expanduser("~/tmp/moot/")
+    os.makedirs(cdir, exist_ok=True)
+    lfn = fn[len("MOOT/"):]
+    lpath = os.path.join(cdir, lfn)
+    if not os.path.exists(lpath):
+      rurl = f"https://github.com/timm/moot/{fn}"
+      urllib.request.urlretrieve(rurl, lpath)
+    return lpath
+
+def csv(s):
+  with open(moot(s) or s, 'r', newline='') as f:
     for line in f:
-      yield [coerce(x) for x in line.strip().split(",")]
+      yield [coerce(s) for s in line.strip().split(',')]
 
 def coerce(x):
   for what in (int, float):
