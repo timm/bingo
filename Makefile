@@ -45,17 +45,16 @@ lint: ## lint all python in this directory
 		    --disable=C0410,C0115,C3001,R0903,E1101 \
 		    --disable=E701,W0108,W0106,W0718,W0201   bingo.py
 
-../docs/%.html : %.py
-	pycco -d $(Top)/docs  $^
-	echo "pre { font-size: small;} p { text-align:right; }" >> $(Top)/docs/pycco.css
+docs/%.html : %.py
+	docco -o docs  $^
+	echo "pre { font-size: small;} p { text-align:right; }" >> docs/docco.css
 	gawk '/<h1>/ {print "<div class=docs>";                       \
-                while(getline x < "../etc/head.html") {print x}; \
+                while(getline x < "etc/head.html") {print x}; \
                 print "<h1>'$^'</h1></div>";                  \
                 next} 1' $@ > tmp.tmp
 	mv tmp.tmp $@
 
-~/tmp/%.pdf: %.py  ## make doco: .py ==> .pdf
-	mkdir -p ~/tmp
+~/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \

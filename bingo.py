@@ -67,8 +67,8 @@ Command-line actions:
 from pprint import pformat as say
 import random,math,sys,re
 
-any=random.choice
-many=random.choices
+pick=random.choice
+picks=random.choices
 
 ### Create ---------------------------------------------------------------------
 # Struct (with named fields + pretty print).
@@ -233,7 +233,7 @@ def extrapolate(data,row,a,b):
   return ya + project(data,row,a,b) * (yb - ya)  
 
 def poles(data): # -> List[Row]
-  r0, *some = many(i.rows, k=the.some + 1)
+  r0, *some = picks(i.rows, k=the.some + 1)
   out = [max(some, key=lambda r1: xdist(data.r1, r0))]
   for _ in range(the.dims):
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
@@ -354,8 +354,11 @@ def cat(v):
   if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
   if it is float: return str(int(x)) if v == int(v) else f"{x:.3g}"
   if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
-  return str(v)
+  return say(v)
 
+# Reset slots from CLI flags, matching on first letter of slot.
+# e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
+# flags reverse old value. e.g. `-v `negates  current value of `d["verbose"]=False`.
 def cli(d):
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
