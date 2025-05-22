@@ -1,6 +1,7 @@
-<img src="docs/bingo.png" width=300 align=left>
 
 # bingo
+
+<img src="docs/bingo.png" width=300 align=right>
 
 This code reads csv data from `-f file`, then divides those rows into 
 `-B Bins`  along `-d dimes` random projections. 
