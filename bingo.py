@@ -25,7 +25,7 @@
 # - `_` marks private vars/methods;
 # - `i` means `self`;
 # - `col` means `num` or `sym`, often shortenned to `c`.
-# - `row` = `List[int|num|str]`
+# - `row` = `List[int|num|str]` asdasas 
 # - vars called `d,a,n,s` are often dictionary, array, number, string;
 # - structs use `struct.it` to denote type;
 # - struct constructors are functions starting with uppercase; e.g. `Sym.,Num`
@@ -63,7 +63,7 @@ Options, with (defaults):
 
 Command-line actions:
   -h        show help
- """
+"""
 from pprint import pformat as say
 import random,math,sys,re
 
