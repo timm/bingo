@@ -8,6 +8,10 @@ SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
 
+LOUD = \033[1;34m#
+HIGH = \033[1;33m#
+SOFT = \033[0m#
+
 Top=$(shell git rev-parse --show-toplevel)
 Tmp  ?= $(HOME)/tmp
 
