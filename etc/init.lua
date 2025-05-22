@@ -12,6 +12,7 @@ vim.opt.undodir = os.getenv("HOME") .. "/.nvim/undodir" -- Directory for undo fi
 vim.opt.ignorecase = true       -- Ignore case in search patterns
 vim.opt.smartcase = true        -- Override 'ignorecase' if search pattern contains uppercase
 vim.opt.incsearch = true        -- Highlight matches as you type
+vim.opt.hlsearch = true         -- Highlight all matches for the current search pattern
 vim.opt.cursorline = true       -- Highlight the current line
 vim.opt.swapfile = false        -- Do not create swap files
 vim.opt.backup = false          -- Do not create backup files
@@ -22,6 +23,11 @@ vim.opt.wildmode = "list:longest,full" -- How wildmenu behaves
 vim.opt.smartindent = true      -- Smart auto-indenting
 vim.opt.wrap = false            -- Do not wrap lines
 vim.opt.title = true            -- Set terminal title
+vim.opt.clipboard = "unnamedplus" -- Share clipboard with system (copy/paste to/from other applications)
+
+-- Set leader key to spacebar (common and ergonomic choice)
+vim.g.mapleader = " "
+vim.g.maplocalleader = " "
 
 -- Bootstrap lazy.nvim plugin manager
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -101,6 +107,43 @@ require("lazy").setup({
     "preservim/nerdcommenter",
     lazy = false, -- Load this eagerly as it's a utility
   },
+
+  -- UI for messages, cmdline, and popups (highly recommended for modern Neovim)
+  {
+    "folke/noice.nvim",
+    event = "VeryLazy",
+    opts = {
+      -- Add any specific Noice configuration here if needed
+      -- For example, to disable the mini view:
+      -- cmdline = { view = "popup" },
+    },
+    dependencies = {
+      -- If you want to use the "popup" view for cmdline, you might need "nui.nvim"
+      -- { "MunifTanjim/nui.nvim" },
+      "rcarriga/nvim-notify", -- Required for Noice notifications
+    },
+  },
+
+  -- Nvim-Treesitter for advanced syntax highlighting and parsing
+  {
+    "nvim-treesitter/nvim-treesitter",
+    build = ":TSUpdate",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("nvim-treesitter.configs").setup({
+        ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "javascript", "typescript", "html", "css", "json", "yaml", "markdown" }, -- Add languages you use
+        sync_install = false, -- Install parsers asynchronously
+        auto_install = true,  -- Automatically install missing parsers
+        highlight = {
+          enable = true, -- Enable syntax highlighting
+          additional_vim_regex_highlighting = false, -- Disable legacy regex highlighting
+        },
+        indent = {
+          enable = true, -- Enable tree-sitter based indentation
+        },
+      })
+    end,
+  },
 })
 
 -- Load and setup Catppuccin colorscheme (ensure this is called after lazy.nvim setup)
@@ -111,11 +154,45 @@ require("catppuccin").setup({
 })
 vim.cmd.colorscheme "catppuccin"
 
--- The autocmd for NvimTree opening behavior is removed as per your request to revert.
-
 -- Keybindings for plugins (optional, but recommended for usability)
 vim.keymap.set("n", "<C-n>", ":NvimTreeToggle<CR>", { desc = "Toggle NvimTree" })
 vim.keymap.set("n", "<leader>ff", "<cmd>Telescope find_files<cr>", { desc = "Find files" })
 vim.keymap.set("n", "<leader>fg", "<cmd>Telescope live_grep<cr>", { desc = "Live Grep" })
 vim.keymap.set("n", "<leader>c", ":NERDCommenterComment<CR>", { desc = "Comment/Uncomment line(s)" }) -- For NERDCommenter
+
+-- Minimal Neovim Tricks:
+
+-- 1. Window Navigation with Ctrl + H/J/K/L
+-- This allows you to quickly move between split windows using the standard HJKL keys
+-- while holding down the Ctrl key, which is very efficient.
+vim.keymap.set("n", "<C-h>", "<C-w>h", { desc = "Move to left window" })
+vim.keymap.set("n", "<C-j>", "<C-w>j", { desc = "Move to lower window" })
+vim.keymap.set("n", "<C-k>", "<C-w>k", { desc = "Move to upper window" })
+vim.keymap.set("n", "<C-l>", "<C-w>l", { desc = "Move to right window" })
+
+-- 2. Highlight on Yank
+-- Briefly highlights the text that was just yanked (copied), providing visual feedback.
+-- This uses an autocommand to trigger a highlight group for a short duration.
+vim.api.nvim_create_autocmd("TextYankPost", {
+  callback = function()
+    vim.highlight.on_yank({
+      higroup = "IncSearch", -- Use the 'IncSearch' highlight group for visibility
+      timeout = 200,         -- Highlight for 200 milliseconds
+    })
+  end,
+  group = vim.api.nvim_create_augroup("YankHighlight", { clear = true }), -- Create a dedicated augroup
+})
+
+-- 3. Buffer Navigation
+-- Quick keybindings to move between open buffers.
+vim.keymap.set("n", "[b", ":bprevious<CR>", { desc = "Previous buffer" })
+vim.keymap.set("n", "]b", ":bnext<CR>", { desc = "Next buffer" })
+
+-- 4. Clear search highlights
+-- A simple keymap to clear search highlights with <leader>nh (no highlight).
+vim.keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "Clear search highlights" })
+
+-- 5. Toggle relative number (useful for specific tasks)
+-- Toggle between absolute and relative line numbers.
+vim.keymap.set("n", "<leader>tn", ":set relativenumber!<CR>:set number!<CR>", { desc = "Toggle relative/absolute line numbers" })
 

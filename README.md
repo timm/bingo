@@ -61,5 +61,4 @@ the `y` goals  to be maximized/minimize. Other columns are the
 `x` independent variables. The input data has all the `y` values known, but that
 is just for testing purposes. The core `bingo` algorithm only ever glances at
 a handful of those labels.
-
 ```

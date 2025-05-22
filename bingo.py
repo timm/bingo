@@ -148,7 +148,7 @@ def add(i,v, flip=1,purge=False): # -> v
       d      = n - num.mu
       num.mu  += flip * (d / num.n)
       num._m2 += flip * (d * (v -   num.mu))
-    
+
   if v != "?": 
     it.n += flip
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
