@@ -1,4 +1,4 @@
-<img src="bingo.png" width=300 align=left>
+<img src="docs/bingo.png" width=300 align=left>
 
 # bingo
 
