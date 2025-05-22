@@ -58,7 +58,10 @@ junjie ,   5     ,  100
 ```
 In row1, upper case names denote numeric columns. Names ending with `+`, `-` are
 the `y` goals  to be maximized/minimize. Other columns are the 
-`x` independent variables. The input data has all the `y` values known, but that
+`x` independent variables. 
+
+## Note
+
+The input data has all the `y` values known, but that
 is just for testing purposes. The core `bingo` algorithm only ever glances at
 a handful of those labels.
-```
