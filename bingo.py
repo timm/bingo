@@ -8,7 +8,7 @@
 #                                     /\____/
 #                                     \_/__/                        
 # -->
-# &nbsp; <img src="bingo.png" width=200 align=left>
+# &nbsp; <img src="bingo.png" width=200 align=left> 
 # This code reads csv data from `-f file`, then divides those rows into 
 # `-B Bins`  along `-d dimes` random projections. 
 #  
