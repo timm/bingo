@@ -1,80 +1,61 @@
-# <!--   __
-#       /\ \        __
-#       \ \ \____  /\_\     ___       __       ___
-#        \ \ '__`\ \/\ \  /' _ `\   /'_ `\    / __`\
-#         \ \ \L\ \ \ \ \ /\ \/\ \ /\ \L\ \  /\ \L\ \
-#          \ \_,__/  \ \_\\ \_\ \_\\ \____ \ \ \____/
-#           \/___/    \/_/ \/_/\/_/ \/___L\ \ \/___/
-#                                     /\____/
-#                                     \_/__/                        
-# -->
-# &nbsp; <img src="bingo.png" width=200 align=left> 
-# This code reads csv data from `-f file`, then divides those rows into 
-# `-B Bins`  along `-d dimes` random projections. 
-#  
-#  After randomly scoring 
-# `-a a` bins, then `-b b` times, it selects two labeled examples, 
-# guesses their  y-values via extrapolation, then labels the best guess.
+# &nbsp; <img src="bingo.png" width=250 style="padding-left:20px;" align=right>
+# `bingo.py` reads a  CSV file (`-f`) then    
+# (1) bins the rows into `-B` Bins along `-d` random projections; then     
+# (2) actively learns by scoring `-a` random bins, then for `-b` iterations,
+# extrapolates from 2 examples to label best `y`-guess; then    
+# (3) `-c` top bin items are labeled for evaluation. 
 #    
-# Afterwards, `-c c` items from the top bain are labeled for evaluation.
-# This code is successful if it finds great rows, after just labeling
-# just a few rows; e.g. `a+b+c<32` in a space of (say) 1,000+ rows.
-#     
-# #### In this code:
-# - `the` is config, parsed from top docstring (can be updated via CLI);
-# - `_` marks private vars/methods;
-# - `i` means `self`;
-# - `col` means `num` or `sym`, often shortenned to `c`.
-# - `row` = `List[int|num|str]` asdasas 
-# - vars called `d,a,n,s` are often dictionary, array, number, string;
-# - structs use `struct.it` to denote type;
-# - struct constructors are functions starting with uppercase; e.g. `Sym.,Num`
-# - stuct variables are named after their constructor. e.g. `sym,num1`
-# - no classes (so polymorphic methods can stay together in the source).
-# - `eg__xxx` are CLI demos (run with `--xxx`);
-# - The input data is csv,  where row one names the column;  e.g.
-# ```
-# name   , ShoeSize, Age+
-# tim    ,  12     ,   50
-# junjie ,   5     ,  100
-# ...    ,  ...    ,  ...
-# ```
-# In row1, upper case names denote numeric columns. Names ending with `+`, `-` are
-# the `y` goals  to be maximized/minimize. Other columns are the 
-# `x` independent variables. The input data has all the `y` values known, but that
-# is just for testing purposes. The core `bingo` algorithm only ever glances at
-# a handful of those labels.
+# Success here means that  trees learned from (from `a+b` labels) finds stuff 
+# as good as anything else (after seeing very few labels).
+#   
+# ### Coding conventions: 
+# - `the` is for CLI config,
+# - `row` is a list,
+# - prefix `_` means "private", 
+# - `col` or `c` means `Num` or `Sym`,
+# - `i` means "self", 
+# - `d,a,n,s` = dict, array, num, str, 
+# - Structs (no classes), since polymorphic code can be shown together,
+# - `.it` in structs denotes type
+# - Uppercase functions are constructors (e.g. `Sym`), and their matching
+#   lowercase names are variables from that constructor (e.g. `sym`),
+# - `eg__xxx` are CLI demos (e.g. `--xxx`),
+# - In CSV input files, uppercase names on row1 denotes numeric; `+`/`-`
+# - show `y`-goals (others `x`). 
 """
 bingo.py: stochastic landscape analysis for multi objective reasoning
 (c) 2025 Tim Menzies, <timm@ieee.org>. MIT license
 
-Options, with (defaults):
+Options, with their (defaults):
   
    -B Bins   number of bins (10)
    -d dims   number of dimensions (4)
-   -p p      minkowski coefficient  (2)
    -a a      rows labelled at random during cold start (4)
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
    -f file   csv file for data (../../moot/optimize/misc/auto93.csv)
+   -G Got    directory to cache downloaded data files (~/tmp/moot)
+   -g get    github repo storing example data files (timm/moot)      
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
-   -r rseed  random number seed (1234567890)
+   -p p      minkowski coefficient  (2)
+   -r rseed  random number seed (1234567891)
    -z zero   ignore bins with zero items; 0=auto choose (0)
    -h        show help
 
 """
-from pprint import pformat as say
 import urllib.request, random, math, sys, re, os
 
+sys.dont_write_bytecode = True
 pick=random.choice
 picks=random.choices
+BIG=1E32
 
-### Command-line  ----------------------------------------------------------------
+### Command-line  --------------------------------------------------------------
 
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
-# flags reverse old value. e.g. `-v `negates  current value of `d["verbose"]=False`.
+# flags reverse old value. e.g. `-v `negates  (e.g.) `d["verbose"]=False`.
 def cli(d):
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
@@ -83,6 +64,7 @@ def cli(d):
                       "True" if str(v) == "False" else (
                        sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
 
+# String to thing
 def coerce(x):
   for what in (int, float):
     try: return what(x)
@@ -108,12 +90,13 @@ def eg__all():
         fun()
 
 ### Settings  ------------------------------------------------------------------
-# Struct (with named fields + pretty print).
+# Structs with named fields + pretty print.
 class o:
   __init__= lambda i, **d: i.__dict__.update(**d)
   __repr__= lambda i: \
-               (f.__name__ if (f:=i.__dict__.get("it")) else "")+say(i.__dict__)
+               (f.__name__ if (f:=i.__dict__.get("it")) else "")+cat(i.__dict__)
 
+# Parse the `__doc__` string to generate `the` config variable.
 the= o(**{m[1]: coerce(m[2])
           for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)}) 
 
@@ -123,19 +106,19 @@ def eg__the() -> None:
 
 ### Create ---------------------------------------------------------------------
 # Update `i` with  multiple things. 
-def inits(things, it): [add(it,thing) for thing in things]; return it
+def inits(things, i): [add(i,thing) for thing in things]; return i
 
 # Summarize a stream of numbers
 def Num(init=[], txt=" ",at=0): # -> Num
   return inits(init, 
                o(it=Num, 
-                 n=0,      # count of items
-                 at=at,    # column position
-                 txt=txt,  # column name 
-                 mu=0,     # mean of what what seen
-                 _m2=0,    # second moment (used to find sd)
-                 lo =-BIG, # lowest seen
-                 hi =BIG,  # largest
+                 n=0,       # count of items
+                 at=at,     # column position
+                 txt=txt,   # column name 
+                 mu=0,      # mean of what what seen
+                 _m2=0,     # second moment (used to find sd)
+                 lo =  BIG, # lowest seen
+                 hi = -BIG, # largest
                  heaven=(0 if txt[-1]=="-" else 1))) # 0,1 = minimize,maximize
 
 # Summarize a stream of symbols
@@ -158,68 +141,108 @@ def Cols(names): # -> Cols
 
 # Keep some `rows`, summarize them in the `cols`.
 def Data(init=[]): # -> Data
-  init = iter(src)
+  init = iter(init)
   names = next(init) # column names 
-  return inits(init, o(it=Data, rows = [],           # contains the rows
+  return inits(init, o(it=Data, n=0,
+                                rows = [],           # contains the rows
                                 cols = Cols(names))) # summaries of the rows 
               
 # Mimic the structure of an existing `Data`. Optionally, add some rows.
 def clone(data, rows=[]): # -> Data
-  return adds(Data([[col.txt for col in data.cols.all]]), rows)
-             
+  return inits(Data([[col.txt for col in data.cols.all]]), rows)
+
+### def ent ,sd
+### Read --------------------------------------------------------------------
+def csv(s):
+  with open(webdata(s) or s, 'r', newline='') as f:
+    for line in f:
+      yield [coerce(s) for s in line.strip().split(',')]
+
+def webdata(fn):
+  if fn.startswith(the.get):
+    cdir = os.path.expanduser(the.Got)
+    os.makedirs(cdir, exist_ok=True)
+    lfn = fn[len(the.get)+1:]
+    lpath = os.path.join(cdir, lfn)
+    if not os.path.exists(lpath):
+      rurl = f"https://github.com/{the.get}/tree/master/{fn}"
+      urllib.request.urlretrieve(rurl, lpath)
+    return lpath
+
+def eg__csv():
+  "Print csv data."
+  m = 0
+  for n,row in enumerate(csv(the.file)):
+    if n>0: assert( int is type(row[0]) )
+    m += len(row)
+    if n%50==0: print(n,row)
+  assert(n==398)
+
+def eg__cols():
+  "Print csv data."
+  cols = (lbs,acc,mpg) = Cols( next(csv(the.file))).y
+  assert mpg.heaven==1 and lbs.heaven==0 and acc.at==6
+  [print(cat(col)) for col in cols]
+ 
 ### Update --------------------------------------------------------------------
 # `sub` is just `add`ing -1.
 def sub(i,v,purge=False): # -> v
-  return add(iv, flip= -1, purge=purge)
+  return add(i, inc= -1, purge=purge)
 
 # If `v` is unknown, then ignore. Else, update.
-def add(i,v, flip=1,purge=False): # -> v
+def add(i,v, inc=1, purge=False): # -> v
   def _sym(sym,s): # update symbol counts
-    sym.has[s] = flip + sym.has.get(s,0)
+    sym.has[s] = inc + sym.has.get(s,0)
 
   def _data(data,row): # keep the new row, update the cols summaries.
-    if flip < 0:  
+    if inc < 0:  
       if purge: data.rows.remove(v) 
-      [sub(col, row[col.at], col) for col in data.cols.all]  
+      [sub(col, row[col.at], col, inc) for col in data.cols.all]  
     else: 
-      data.rows += [[add(col, row[col.at]) for col in data.cols.all]]
+      data.rows += [[add(col, row[col.at],inc) for col in data.cols.all]]
 
   def _num(num,n): # update lo,hi, mean and _m2 (used in sd calculation) 
     num.lo = min(n, num.lo)
     num.hi = max(n, num.hi)
-    if flip < 0 and num.n < 2: 
+    if inc < 0 and num.n < 2: 
       num._m2 = num.mu = num.n = 0
     else:
-      d      = n - num.mu
-      num.mu  += flip * (d / num.n)
-      num._m2 += flip * (d * (v -   num.mu))
+      d        = n - num.mu
+      num.mu  += inc * (d / num.n)
+      num._m2 += inc * (d * (n - num.mu))
 
   if v != "?": 
-    it.n += flip
+    i.n += inc
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
+
+def eg__data(): 
+  model = Data(csv(the.file)).cols.x[2]
+  assert 3.69 <div( model) < 3.7
+  assert model.lo == 70 and model.hi == 82
+
+# def add sub
 
 ### Reports -------------------------------------------------------------------
 def mids(data): return [mid(col) for col in data.cols.all]
 
 def mid(col): 
-  return col.mu if col.it is Num else max(col.has, key=cols.has.get)
+  return col.mu if col.it is Num else max(col.has, key=col.has.get)
 
 def div(col):
   def _num(num):
-    return (max(num.m2,0)/(num.n - 1))**0.5
+    return (max(num._m2,0)/(num.n - 1))**0.5
 
   def _sym(sym):
     return -sum(v/sym.n * math.log(v/sym.n, 2) for v in sym.has.values() if v>0)
 
-  return (_num if i.it is Num else _sym)(col)
+  return (_num if col.it is Num else _sym)(col)
 
 ### Bayes ---------------------------------------------------------------------
 def like(data, row, nall=2, nh=100):
-  n = len(data.rows)
-  prior = (n + the.k) / (nall + the.k*nh)
+  prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at], prior, nall, nh) 
-         for c in i.cols.x if row[c.at] != "?"]
+         for c in data.cols.x if row[c.at] != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
 def pdf(col,v, prior=0, nall=2, nh=100):
@@ -229,10 +252,10 @@ def pdf(col,v, prior=0, nall=2, nh=100):
   def _num(num,n):
     sd = num.div() or 1 / BIG
     var = 2 * sd * sd
-    z = (x - num.mu) ** 2 / var
+    z = (n - num.mu) ** 2 / var
     return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
   
-  return (_num if i.it is Num else _sym)(col,v)
+  return (_num if col.it is Num else _sym)(col,v)
 
 ### Distance ------------------------------------------------------------------
 def norm(i,v):
@@ -248,7 +271,7 @@ def dist(col,v,w):
     n2 = n2 if n2 != "?" else (0 if n1 > 0.5 else 1)
     return abs(n1 - n2)
  
-  return 1 if v=="?" and w=="?" else (_num if i.it is Num else _sym)(col,v,w)
+  return 1 if v=="?" and w=="?" else (_num if col.it is Num else _sym)(col,v,w)
 
 def minkowski(a):
   total, n = 0, 1 / BIG
@@ -278,7 +301,7 @@ def extrapolate(data,row,a,b):
   return ya + project(data,row,a,b) * (yb - ya)  
 
 def poles(data): # -> List[Row]
-  r0, *some = picks(i.rows, k=the.some + 1)
+  r0, *some = picks(data.rows, k=the.some + 1)
   out = [max(some, key=lambda r1: xdist(data.r1, r0))]
   for _ in range(the.dims):
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
@@ -314,24 +337,23 @@ def cuts(col,rows,Y,Klass):
   def _sym(sym): 
     n,d = 0,{}
     for row in rows:
-      x = row[i.at] 
-      if x != "?":
+      if (x := row[col.at]) != "?":
         n = n + 1
         d[x] = d.get(x) or Klass()
         add(d[x], Y(row))
     return o(div = sum(c.n/n * div(c) for c in d.values()),
-             hows = [("==",c.at,k) for k,v in d.items()])
+             hows = [("==",col.at,k) for k,v in d.items()])
 
   def _num(num):
     out, b4, lhs, rhs = None, None, Klass(), Klass()
-    xys = [(r[i.at], add(rhs, Y(r))) for r in rows if r[i.at] != "?"]
+    xys = [(r[num.at], add(rhs, Y(r))) for r in rows if r[num.at] != "?"]
     xpect = div(rhs)
     for x, y in sorted(xys, key=lambda xy: x[0]):
       if x != b4:
         if the.leaf <= lhs.n <= len(xys) - the.leaf:
           tmp = (lhs.n * div(lhs) + rhs.n * div(rhs)) / len(xys)
           if tmp < xpect:
-            xpect, out = tmp, [("<=", i.at, b4), (">", i.at, b4)]
+            xpect, out = tmp, [("<=", num.at, b4), (">", num.at, b4)]
       add(lhs, sub(rhs,y))
       b4 = x
     if out: 
@@ -341,13 +363,13 @@ def cuts(col,rows,Y,Klass):
 
 def tree(data1, rows=None, Klass=Num, how=None):
   Y          = lambda row: ydist(data1,row)
-  rows       = rows or i.rows
+  rows       = rows or data1.rows
   data2.kids = []
   data2.how  = how
   data2      = clone(data1, rows)
   data2.ys   = Num(Y(row) for row in rows)
   if len(rows) >= the.leaf:
-    cuts = [tmp for c in t.cols.x if (tmp := cuts(c,rows,Y,Klass=Klass))]    
+    cuts = [x for c in data1.cols.x if (x := cuts(c,rows,Y,Klass=Klass))]    
     if cuts:
       for how in sorted(cuts, key=lambda cut: cut.div)[0].hows:
         rows1 = [row for row in rows if selects(row, *how)]
@@ -367,7 +389,7 @@ def leaf(data1,row):
   return data1
 
 def show(data, key=lambda z:z.ys.mu):
-  stats = i.ys
+  stats = data.ys
   win = lambda x: 100-int(100*(x-stats.lo)/(stats.mu - stats.lo))
   print(f"{'d2h':>4} {'win':>4} {'n':>4}  ")
   print(f"{'----':>4} {'----':>4} {'----':>4}  ")
@@ -378,31 +400,17 @@ def show(data, key=lambda z:z.ys.mu):
     if lvl > 0:
       op,at,y = node.decision
       xplain = f"{data.cols.all[at].txt} {op} {y}"
-    print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {len(node._rows):4}    {(lvl-1) * '|  '}{xplain}" + post)
+    print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    {(lvl-1) * '|  '}{xplain}" + post)
           
 ### Utils ----------------------------------------------------------------------
-def moot(fn):
-  if fn.startswith("MOOT/"):
-    cdir = os.path.expanduser("~/tmp/moot/")
-    os.makedirs(cdir, exist_ok=True)
-    lfn = fn[len("MOOT/"):]
-    lpath = os.path.join(cdir, lfn)
-    if not os.path.exists(lpath):
-      rurl = f"https://github.com/timm/moot/{fn}"
-      urllib.request.urlretrieve(rurl, lpath)
-    return lpath
-
-def csv(s):
-  with open(moot(s) or s, 'r', newline='') as f:
-    for line in f:
-      yield [coerce(s) for s in line.strip().split(',')]
-
 def cat(v): 
   it = type(v)
+  inf = float('inf')
   if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
-  if it is float: return str(int(x)) if v == int(v) else f"{x:.3g}"
+  if it is float: return str(int(v)) if -inf < v < inf and v == int(v) else f"{v:.3g}"
   if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
-  return say(v)
+  if it in [type(abs), type(cat)]: return v.__name__
+  return str(v)
 
 ### Start-up ------------------------------------------------------------------
 if __name__ == "__main__":

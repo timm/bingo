@@ -203,3 +203,12 @@ vim.keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "Clear search high
 -- Toggle between absolute and relative line numbers.
 vim.keymap.set("n", "<leader>tn", ":set relativenumber!<CR>:set number!<CR>", { desc = "Toggle relative/absolute line numbers" })
 
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "python",
+  callback = function()
+    vim.bo.tabstop = 2
+    vim.bo.shiftwidth = 2
+    vim.bo.expandtab = true
+    vim.bo.softtabstop = 2
+  end,
+})

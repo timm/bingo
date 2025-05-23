@@ -7,7 +7,6 @@
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
-VPATH = . : ..
 
 LOUD = \033[1;34m##
 HIGH = \033[1;33m#
@@ -41,28 +40,31 @@ lint: ## lint all python in this directory
 		    --disable=C0410,C0115,C3001,R0903,E1101 \
 		    --disable=E701,W0108,W0106,W0718,W0201   *.py
 
-docs/%.html : %.py
-	docco -o docs  $^
-	echo "pre { font-size: small;} p { text-align:right; }" >> docs/docco.css
+docs/%.html : %.py  Makefile etc/head.html
+	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > docs/$<
+	cd docs; docco -o .  $<; 
+	rm docs/$<
+	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC; }p { text-align:right; }" >> docs/docco.css
 	gawk '/<h1>/ {print "<div class=docs>";                       \
                 while(getline x < "etc/head.html") {print x}; \
-                print "<h1>'$^'</h1></div>";                  \
+                print "<h1>'$<'</h1></div>";                  \
                 next} 1' $@ > tmp.tmp
 	mv tmp.tmp $@
+	open $@
 
-docs/%.pdf: %.py  ## make doco: .py ==> .pdf
+docs/%.pdf: %.py  Makefile ## make doco: .py ==> .pdf
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \
-		--chars-per-line=90 \
+		--portrait           \
 		--file-align=fill      \
 		--line-numbers=1        \
-		--pro=color               \
-		--left-title=""            \
-		--borders=no             \
-	    --left-footer="$<  "               \
-	    --right-footer="page %s. of %s#"               \
-		--columns 3                 \
+		--pro=color              \
+		--left-title=""           \
+		--borders=no               \
+	    --left-footer="$<  "      \
+	    --right-footer="page %s. of %s#"  \
+		--columns 2                  \
 		-M letter                     \
 		-o - $< | ps2pdf - $@
 	open $@
