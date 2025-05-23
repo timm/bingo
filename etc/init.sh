@@ -1,6 +1,10 @@
+#!/bin/env bash
+me=`basename $PWD`
+me=${me^^}
+
 hi() { 
   clear; echo -ne "\033[1;33m"
-  figlet -W -f slant " `basename $PWD`"
+  figlet -W -f slant "$me"
   tput sgr0 bold; aliases; tput sgr0; }
 
 aliases() {
@@ -24,5 +28,5 @@ export PATH="$PWD:/Library/Frameworks/Python.framework/Versions/3.13/bin:$PATH"
 
 EDITOR=nvim
 
-PROMPT_COMMAND='echo -ne "🎲 $(git branch 2>/dev/null | grep '^*' | colrm 1 2):";PS1="$(there ..)/$(there .):\!\e[m ▶ "'
+PROMPT_COMMAND='echo -ne "${me}@$(git branch 2>/dev/null | grep '\''^*'\'' | colrm 1 2):";PS1="$(there ..)/$(there .):\!\e[m ▶ "'
 hi

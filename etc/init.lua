@@ -1,29 +1,29 @@
 -- Essential Neovim settings for a clean and efficient workflow
-vim.opt.termguicolors = true    -- Enable true color support
-vim.opt.tabstop = 2             -- Number of spaces a <Tab> counts for
-vim.opt.shiftwidth = 2          -- Number of spaces to use for each step of (auto)indent
-vim.opt.expandtab = true        -- Use spaces instead of tabs
-vim.opt.softtabstop = 2         -- Number of spaces <BS> and <Tab> use in insert mode
-vim.opt.number = true           -- Show current line number
-vim.opt.relativenumber = true   -- Show relative line numbers
-vim.opt.mouse = "a"             -- Enable mouse support in all modes
-vim.opt.undofile = true         -- Enable persistent undo
+vim.opt.termguicolors = true       -- Enable true color support
+vim.opt.tabstop = 2                -- Number of spaces a <Tab> counts for
+vim.opt.shiftwidth = 2             -- Number of spaces to use for each step of (auto)indent
+vim.opt.expandtab = true           -- Use spaces instead of tabs
+vim.opt.softtabstop = 2            -- Number of spaces <BS> and <Tab> use in insert mode
+vim.opt.number = true              -- Show current line number
+vim.opt.relativenumber = true      -- Show relative line numbers
+vim.opt.mouse = "a"                -- Enable mouse support in all modes
+vim.opt.undofile = true            -- Enable persistent undo
 vim.opt.undodir = os.getenv("HOME") .. "/.nvim/undodir" -- Directory for undo files (create this directory: mkdir -p ~/.nvim/undodir)
-vim.opt.ignorecase = true       -- Ignore case in search patterns
-vim.opt.smartcase = true        -- Override 'ignorecase' if search pattern contains uppercase
-vim.opt.incsearch = true        -- Highlight matches as you type
-vim.opt.hlsearch = true         -- Highlight all matches for the current search pattern
-vim.opt.cursorline = true       -- Highlight the current line
-vim.opt.swapfile = false        -- Do not create swap files
-vim.opt.backup = false          -- Do not create backup files
-vim.opt.errorbells = false      -- No sound effects for errors
-vim.opt.visualbell = true       -- Use visual bell instead of sound
-vim.opt.wildmenu = true         -- Enhanced command-line completion menu
+vim.opt.ignorecase = true          -- Ignore case in search patterns
+vim.opt.smartcase = true           -- Override 'ignorecase' if search pattern contains uppercase
+vim.opt.incsearch = true           -- Highlight matches as you type
+vim.opt.hlsearch = true            -- Highlight all matches for the current search pattern
+vim.opt.cursorline = true          -- Highlight the current line
+vim.opt.swapfile = false           -- Do not create swap files
+vim.opt.backup = false             -- Do not create backup files
+vim.opt.errorbells = false         -- No sound effects for errors
+vim.opt.visualbell = true          -- Use visual bell instead of sound
+vim.opt.wildmenu = true            -- Enhanced command-line completion menu
 vim.opt.wildmode = "list:longest,full" -- How wildmenu behaves
-vim.opt.smartindent = true      -- Smart auto-indenting
-vim.opt.wrap = false            -- Do not wrap lines
-vim.opt.title = true            -- Set terminal title
-vim.opt.clipboard = "unnamedplus" -- Share clipboard with system (copy/paste to/from other applications)
+vim.opt.smartindent = true         -- Smart auto-indenting
+vim.opt.wrap = false               -- Do not wrap lines
+vim.opt.title = true               -- Set terminal title
+vim.opt.clipboard = "unnamedplus"  -- Share clipboard with system (copy/paste to/from other applications)
 
 -- Set leader key to spacebar (common and ergonomic choice)
 vim.g.mapleader = " "
@@ -45,9 +45,11 @@ vim.opt.rtp:prepend(lazypath)
 
 -- Load plugins using lazy.nvim
 require("lazy").setup({
-  -- Catppuccin colorscheme (already handled by Makefile, but added here for consistency with lazy.nvim)
-  -- If you prefer lazy.nvim to manage it, remove the Makefile cloning step for catppuccin.
+  -- Catppuccin colorscheme
   { "catppuccin/nvim", name = "catppuccin", priority = 1000 },
+
+  -- Dependency for many UI plugins, including Noice.nvim
+  { 'MunifTanjim/nui.nvim' },
 
   -- File explorer
   {
@@ -80,7 +82,7 @@ require("lazy").setup({
   -- Status line
   {
     "nvim-lualine/lualine.nvim",
-    dependencies = { "nvim-tree/nvim-tree.lua" }, -- Lualine often integrates with NvimTree
+    dependencies = { "nvim-tree/nvim-tree.lua", "nvim-tree/nvim-web-devicons" }, -- Add web-devicons for icons
     config = function()
       require("lualine").setup {
         options = {
@@ -113,14 +115,14 @@ require("lazy").setup({
     "folke/noice.nvim",
     event = "VeryLazy",
     opts = {
-      -- Add any specific Noice configuration here if needed
-      -- For example, to disable the mini view:
+      -- You can customize Noice here. For example, to use a popup for cmdline:
       -- cmdline = { view = "popup" },
+      -- messages = { view = "mini" },
     },
     dependencies = {
-      -- If you want to use the "popup" view for cmdline, you might need "nui.nvim"
-      -- { "MunifTanjim/nui.nvim" },
+      "MunifTanjim/nui.nvim", -- Crucial for Noice to function
       "rcarriga/nvim-notify", -- Required for Noice notifications
+      "nvim-tree/nvim-web-devicons", -- Recommended for icons within Noice
     },
   },
 
@@ -145,41 +147,17 @@ require("lazy").setup({
     end,
   },
 
-  -- Nvim-Treesitter for advanced syntax highlighting and parsing
-    {
-      "nvim-treesitter/nvim-treesitter",
-      build = ":TSUpdate",
-      event = { "BufReadPre", "BufNewFile" },
-      config = function()
-        require("nvim-treesitter.configs").setup({
-          ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "javascript", "typescript", "html", "css", "json", "yaml", "markdown" }, -- Add languages you use
-          sync_install = false, -- Install parsers asynchronously
-          auto_install = true,  -- Automatically install missing parsers
-          highlight = {
-            enable = true, -- Enable syntax highlighting
-            additional_vim_regex_highlighting = false, -- Disable legacy regex highlighting
-          },
-          indent = {
-            enable = true, -- Enable tree-sitter based indentation
-          },
-        })
-      end,
-    },
-
-    -- THIS IS THE NEW BLOCK YOU NEED TO ADD FOR CONFORM.NVIM
-    {
-        "stevearc/conform.nvim",
-        lazy = false, -- Load conform eagerly so format-on-save works immediately
-        opts = {},    -- Placeholder for conform options
-    },
-
+  -- Formatter
+  {
+    "stevearc/conform.nvim",
+    lazy = false, -- Load conform eagerly so format-on-save works immediately
+    opts = {},    -- Placeholder for conform options
+  },
 })
 
 -- Load and setup Catppuccin colorscheme (ensure this is called after lazy.nvim setup)
 require("catppuccin").setup({
-    -- To set a specific Catppuccin style (e.g., 'mocha', 'latte', 'frappe', 'macchiato'),
-    -- uncomment the 'flavour' line below and set your desired style.
-    flavour = "mocha",
+  flavour = "mocha", -- Set your desired Catppuccin style
 })
 vim.cmd.colorscheme "catppuccin"
 
@@ -224,7 +202,4 @@ vim.keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "Clear search high
 -- 5. Toggle relative number (useful for specific tasks)
 -- Toggle between absolute and relative line numbers.
 vim.keymap.set("n", "<leader>tn", ":set relativenumber!<CR>:set number!<CR>", { desc = "Toggle relative/absolute line numbers" })
-
-
-
 
