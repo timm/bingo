@@ -45,7 +45,7 @@
 # is just for testing purposes. The core `bingo` algorithm only ever glances at
 # a handful of those labels.
 """
-bingo.py: stochastic landscape analysis for multi-objective reasoning
+bingo.py: stochastic landscape analysis for multi objective reasoning
 (c) 2025 Tim Menzies, <timm@ieee.org>. MIT license
 
 Options, with (defaults):
@@ -57,12 +57,12 @@ Options, with (defaults):
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
    -f file   csv file for data (../../moot/optimize/misc/auto93.csv)
-   -k k      Bayes hack (for rare classes)  (1)
-   -m m      Bayes hack (for rare frequencies) (2)
+   -k k      Bayes hack for rare classes  (1)
+   -m m      Bayes hack for rare frequencies (2)
+   -r rseed  random number seed (1234567890)
    -z zero   ignore bins with zero items; 0=auto choose (0)
+   -h        show help
 
-Command-line actions:
-  -h        show help
 """
 from pprint import pformat as say
 import urllib.request, random, math, sys, re, os
@@ -70,35 +70,80 @@ import urllib.request, random, math, sys, re, os
 pick=random.choice
 picks=random.choices
 
-### Create ---------------------------------------------------------------------
+### Command-line  ----------------------------------------------------------------
+
+# Reset slots from CLI flags, matching on first letter of slot.
+# e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
+# flags reverse old value. e.g. `-v `negates  current value of `d["verbose"]=False`.
+def cli(d):
+  for k, v in d.items():
+    for c, arg in enumerate(sys.argv):
+      if arg == "-" + k[0]:
+        d[k] = coerce("False" if str(v) == "True" else (
+                      "True" if str(v) == "False" else (
+                       sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
+
+def coerce(x):
+  for what in (int, float):
+    try: return what(x)
+    except: pass
+  x = x.strip()
+  y = x.lower()
+  return (y == "true") if y in ("true", "false") else x
+
+def eg_h(): 
+  "print help text"
+  print(__doc__,"\nExamples:")
+  for s,fun in globals().items():
+    if s.startswith("eg__"):
+      print(f"  {re.sub('eg__','--',s):>6}     {fun.__doc__}")
+
+def eg__all():
+  "run all examples"
+  for s,fun in globals().items():
+    if s.startswith("eg__"):
+      if s != "eg__all":
+        print(f"\n# {s} {"-"*40}\n# {fun.__doc__}\n")
+        random.seed(the.rseed)
+        fun()
+
+### Settings  ------------------------------------------------------------------
 # Struct (with named fields + pretty print).
 class o:
   __init__= lambda i, **d: i.__dict__.update(**d)
   __repr__= lambda i: \
                (f.__name__ if (f:=i.__dict__.get("it")) else "")+say(i.__dict__)
 
+the= o(**{m[1]: coerce(m[2])
+          for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)}) 
+
+def eg__the() -> None:
+  "Print the configuration."
+  print(the)
+
+### Create ---------------------------------------------------------------------
 # Update `i` with  multiple things. 
-def adds(things, it): [add(it,thing) for thing in things]; return it
+def inits(things, it): [add(it,thing) for thing in things]; return it
 
 # Summarize a stream of numbers
 def Num(init=[], txt=" ",at=0): # -> Num
-  return adds(init, 
-              o(it=Num, 
-                n=0,      # count of items
-                at=at,    # column position
-                txt=txt,  # column name 
-                mu=0,     # mean of what what seen
-                _m2=0,    # second moment (used to find sd)
-                lo =-BIG, # lowest seen
-                hi =BIG,  # largest
-                heaven=(0 if txt[-1]=="-" else 1))) # 0,1 = minimize,maximize
+  return inits(init, 
+               o(it=Num, 
+                 n=0,      # count of items
+                 at=at,    # column position
+                 txt=txt,  # column name 
+                 mu=0,     # mean of what what seen
+                 _m2=0,    # second moment (used to find sd)
+                 lo =-BIG, # lowest seen
+                 hi =BIG,  # largest
+                 heaven=(0 if txt[-1]=="-" else 1))) # 0,1 = minimize,maximize
 
 # Summarize a stream of symbols
 def Sym(init=[], txt=" ",at=0):  # -> Sym
-  return adds(init, o(it=Sym,n=0,     # count of items
-                             at=at,   # column position
-                             txt=txt, # column name
-                            has={})) # hold symbol counts
+  return inits(init, o(it=Sym,n=0,     # count of items
+                              at=at,   # column position
+                              txt=txt, # column name
+                              has={})) # hold symbol counts
 
 # Turn column names into columns (if upper case, then `Num`. Else `Sym`).
 def Cols(names): # -> Cols
@@ -115,8 +160,8 @@ def Cols(names): # -> Cols
 def Data(init=[]): # -> Data
   init = iter(src)
   names = next(init) # column names 
-  return adds(init, o(it=Data, rows = [],           # contains the rows
-                               cols = Cols(names))) # summaries of the rows 
+  return inits(init, o(it=Data, rows = [],           # contains the rows
+                                cols = Cols(names))) # summaries of the rows 
               
 # Mimic the structure of an existing `Data`. Optionally, add some rows.
 def clone(data, rows=[]): # -> Data
@@ -352,14 +397,6 @@ def csv(s):
     for line in f:
       yield [coerce(s) for s in line.strip().split(',')]
 
-def coerce(x):
-  for what in (int, float):
-    try: return what(x)
-    except: pass
-  x = x.strip()
-  y = x.lower()
-  return (y == "true") if y in ("true", "false") else x
-
 def cat(v): 
   it = type(v)
   if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
@@ -367,24 +404,10 @@ def cat(v):
   if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
   return say(v)
 
-# Reset slots from CLI flags, matching on first letter of slot.
-# e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
-# flags reverse old value. e.g. `-v `negates  current value of `d["verbose"]=False`.
-def cli(d):
-  for k, v in d.items():
-    for c, arg in enumerate(sys.argv):
-      if arg == "-" + k[0]:
-        d[k] = coerce("False" if str(v) == "True" else (
-                      "True" if str(v) == "False" else (
-                       sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
-
 ### Start-up ------------------------------------------------------------------
-the= o(**{m[1]: coerce(m[2])
-          for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)}) 
-
 if __name__ == "__main__":
   cli(the.__dict__)
   for n, s in enumerate(sys.argv):
     if fun := globals().get("eg" + s.replace("-", "_")):
       random.seed(the.rseed)
-      fun(None if n == len(sys.argv) - 1 else coerce(sys.argv[n + 1]))
+      fun()

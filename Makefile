@@ -7,6 +7,7 @@
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
+VPATH = . : ..
 
 LOUD = \033[1;34m##
 HIGH = \033[1;33m#
@@ -34,15 +35,11 @@ push: ## commit to main
 sh: ## run my shell
 	here="$(Top)" bash --init-file  $(Top)/etc/init.sh -i
 
-nvimcolors:
-	mkdir -p ~/.config/nvim/pack/plugins/start/
-	git clone https://github.com/catppuccin/nvim.git ~/.config/nvim/pack/plugins/start/catppuccin
-
 lint: ## lint all python in this directory
 	export PYTHONPATH="..:$$PYTHONPATH"; \
 	pylint --disable=W0311,C0303,C0116,C0321,C0103 \
 		    --disable=C0410,C0115,C3001,R0903,E1101 \
-		    --disable=E701,W0108,W0106,W0718,W0201   bingo.py
+		    --disable=E701,W0108,W0106,W0718,W0201   *.py
 
 docs/%.html : %.py
 	docco -o docs  $^
@@ -53,7 +50,7 @@ docs/%.html : %.py
                 next} 1' $@ > tmp.tmp
 	mv tmp.tmp $@
 
-~/docs/%.pdf: %.py  ## make doco: .py ==> .pdf
+docs/%.pdf: %.py  ## make doco: .py ==> .pdf
 	echo "pdf-ing $@ ... "
 	a2ps                 \
 		-Br                 \

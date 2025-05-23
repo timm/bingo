@@ -1,14 +1,19 @@
 #!/bin/env bash
 me=`basename $PWD`
 me=${me^^}
+bold=$(tput bold)
+col1=$(tput setaf 6)
+col2=$(tput setaf 3)
+col0=$(tput sgr0)
+meme="${bold}${col1}$me${col0}"
 
 hi() { 
-  clear; echo -ne "\033[1;33m"
-  figlet -W -f slant "$me"
-  tput sgr0 bold; aliases; tput sgr0; }
+  clear
+  echo -n "$bold$col1"; figlet -W -f slant "$me"; echo -n $col0
+  echo -n $col2; aliases; echo -n $col0; }
 
 aliases() {
-  echo "Short cuts:"; tput setaf 4
+  echo "Short cuts:"
   alias | sed 's/alias /  /'
   echo ""; }
 
@@ -28,5 +33,5 @@ export PATH="$PWD:/Library/Frameworks/Python.framework/Versions/3.13/bin:$PATH"
 
 EDITOR=nvim
 
-PROMPT_COMMAND='echo -ne "${me}@$(git branch 2>/dev/null | grep '\''^*'\'' | colrm 1 2):";PS1="$(there ..)/$(there .):\!\e[m ▶ "'
+PROMPT_COMMAND='echo -ne "${meme}! $(git branch 2>/dev/null | grep '\''^*'\'' | colrm 1 2):";PS1="$(there ..)/$(there .):\!\e[m ▶ "'
 hi
