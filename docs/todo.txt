@@ -1,0 +1,5 @@
+Type	Original	Correction
+Attribute access	data.r1	r1 or correct indexing
+Extra arguments	xdist(data,r1,r2)	xdist(r1,r2)
+Argument mismatch	Missing data in call to bucket()	Consistent function signatures
+Missing definitions	Missing helper definitions (xdist etc.)
