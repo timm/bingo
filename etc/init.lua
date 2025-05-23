@@ -144,6 +144,35 @@ require("lazy").setup({
       })
     end,
   },
+
+  -- Nvim-Treesitter for advanced syntax highlighting and parsing
+    {
+      "nvim-treesitter/nvim-treesitter",
+      build = ":TSUpdate",
+      event = { "BufReadPre", "BufNewFile" },
+      config = function()
+        require("nvim-treesitter.configs").setup({
+          ensure_installed = { "c", "cpp", "lua", "vim", "vimdoc", "query", "javascript", "typescript", "html", "css", "json", "yaml", "markdown" }, -- Add languages you use
+          sync_install = false, -- Install parsers asynchronously
+          auto_install = true,  -- Automatically install missing parsers
+          highlight = {
+            enable = true, -- Enable syntax highlighting
+            additional_vim_regex_highlighting = false, -- Disable legacy regex highlighting
+          },
+          indent = {
+            enable = true, -- Enable tree-sitter based indentation
+          },
+        })
+      end,
+    },
+
+    -- THIS IS THE NEW BLOCK YOU NEED TO ADD FOR CONFORM.NVIM
+    {
+        "stevearc/conform.nvim",
+        lazy = false, -- Load conform eagerly so format-on-save works immediately
+        opts = {},    -- Placeholder for conform options
+    },
+
 })
 
 -- Load and setup Catppuccin colorscheme (ensure this is called after lazy.nvim setup)
@@ -195,4 +224,7 @@ vim.keymap.set("n", "<leader>nh", ":nohlsearch<CR>", { desc = "Clear search high
 -- 5. Toggle relative number (useful for specific tasks)
 -- Toggle between absolute and relative line numbers.
 vim.keymap.set("n", "<leader>tn", ":set relativenumber!<CR>:set number!<CR>", { desc = "Toggle relative/absolute line numbers" })
+
+
+
 
