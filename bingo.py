@@ -266,7 +266,7 @@ ops = {'<=' : lambda x,y: x <= y,
 def selects(row, op, at, y): x=row[op]; return  x=="?" or ops[op](x,y) 
 
 def cuts(col,rows,Y,Klass): 
-  def _sym(): 
+  def _sym(sym): 
     n,d = 0,{}
     for row in rows:
       x = row[i.at] 
@@ -277,7 +277,7 @@ def cuts(col,rows,Y,Klass):
     return o(div = sum(c.n/n * div(c) for c in d.values()),
              hows = [("==",c.at,k) for k,v in d.items()])
 
-  def _num():
+  def _num(num):
     out, b4, lhs, rhs = None, None, Klass(), Klass()
     xys = [(r[i.at], add(rhs, Y(r))) for r in rows if r[i.at] != "?"]
     xpect = div(rhs)
@@ -292,7 +292,7 @@ def cuts(col,rows,Y,Klass):
     if out: 
       return o(div=xpect, hows=out)
 
-  return (_sym if col.it is Sym else _num)()
+  return (_sym if col.it is Sym else _num)(col)
 
 def tree(data1, rows=None, Klass=Num, how=None):
   Y          = lambda row: ydist(data1,row)
