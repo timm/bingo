@@ -70,25 +70,26 @@ bingo.py: stochastic landscape analysis for multi objective reasoning
 Options, with their (defaults):
   
    -B Bins   number of bins (10)
-   -d dims   number of dimensions (4)
    -a a      rows labelled at random during cold start (4)
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
-   -f file   csv file for data (../../moot/optimize/misc/auto93.csv)
+   -d dims   number of dimensions (4)
+   -f file   csv file for data (../moot/optimize/misc/auto93.csv)
+   -G Got    directory to cache downloaded data files (~/tmp/moot)
+   -g get    github repo storing example data files (timm/moot)      
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
    -p p      minkowski coefficient  (2)
    -r rseed  random number seed (1234567891)
    -z zero   ignore bins with zero items; 0=auto choose (0)
    -h        show help
-
 &quot;&quot;&quot;</span>
-<span class="hljs-keyword">from</span> pprint <span class="hljs-keyword">import</span> pformat <span class="hljs-keyword">as</span> say
 <span class="hljs-keyword">import</span> urllib.request, random, math, sys, re, os
 
 sys.dont_write_bytecode = <span class="hljs-literal">True</span>
-pick=random.choice
-picks=random.choices</pre></div></div>
+pick = random.choice
+picks = random.choices
+BIG = <span class="hljs-number">1E32</span></pre></div></div>
             
         </li>
         
@@ -99,7 +100,8 @@ picks=random.choices</pre></div></div>
               <div class="sswrap ">
                 <a class="ss" href="#section-2">&#x00a7;</a>
               </div>
-              <h2 id="command-line">Command-line</h2>
+              <!-- docString | modules)_ _(infohiding | Parnas | decomposition -->
+<h2 id="command-line">Command-line</h2>
 
             </div>
             
@@ -111,6 +113,19 @@ picks=random.choices</pre></div></div>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-3">&#x00a7;</a>
+              </div>
+              <!-- Teneary sysarvc, enumerate,ites=ms -->
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-4">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-4">&#x00a7;</a>
               </div>
               <p>Reset slots from CLI flags, matching on first letter of slot.
 e.g. <code>-f file1</code> sets <code>d[&quot;file&quot;]</code> to <code>file1</code>. If current value is a bolean then
@@ -129,11 +144,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-4">
+        <li id="section-5">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-4">&#x00a7;</a>
+                <a class="ss" href="#section-5">&#x00a7;</a>
               </div>
               <p>String to thing</p>
 
@@ -166,33 +181,16 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-5">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-5">&#x00a7;</a>
-              </div>
-              <h2 id="settings">Settings</h2>
-
-            </div>
-            
-        </li>
-        
-        
         <li id="section-6">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-6">&#x00a7;</a>
               </div>
-              <p>Structs with named fields + pretty print.</p>
+              <p><em>(config | configCrisis | hpo | reflection)</em></p>
+<h2 id="settings">Settings</h2>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">class</span> <span class="hljs-title class_">o</span>:
-  __init__= <span class="hljs-keyword">lambda</span> i, **d: i.__dict__.update(**d)
-  __repr__= <span class="hljs-keyword">lambda</span> i: \
-               (f.__name__ <span class="hljs-keyword">if</span> (f:=i.__dict__.get(<span class="hljs-string">&quot;it&quot;</span>)) <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span>)+say(i.__dict__)</pre></div></div>
             
         </li>
         
@@ -202,6 +200,24 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               
               <div class="sswrap ">
                 <a class="ss" href="#section-7">&#x00a7;</a>
+              </div>
+              <p>Structs with named fields + pretty print.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">class</span> <span class="hljs-title class_">o</span>:
+  __init__= <span class="hljs-keyword">lambda</span> i, **d: i.__dict__.update(**d)
+  __repr__= <span class="hljs-keyword">lambda</span> i: \
+               (f.__name__ <span class="hljs-keyword">if</span> (f:=i.__dict__.get(<span class="hljs-string">&quot;it&quot;</span>)) <span class="hljs-keyword">else</span> <span class="hljs-string">&quot;&quot;</span>)+cat(i.__dict__)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-8">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-8">&#x00a7;</a>
               </div>
               <p>Parse the <code>__doc__</code> string to generate <code>the</code> config variable.</p>
 
@@ -217,30 +233,15 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-8">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-8">&#x00a7;</a>
-              </div>
-              <h2 id="create">Create</h2>
-
-            </div>
-            
-        </li>
-        
-        
         <li id="section-9">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-9">&#x00a7;</a>
               </div>
-              <p>Update <code>it</code> with  multiple things. </p>
+              <h2 id="create">Create</h2>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">inits</span>(<span class="hljs-params">things, it</span>): [add(it,thing) <span class="hljs-keyword">for</span> thing <span class="hljs-keyword">in</span> things]; <span class="hljs-keyword">return</span> it</pre></div></div>
             
         </li>
         
@@ -251,21 +252,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-10">&#x00a7;</a>
               </div>
-              <p>Summarize a stream of numbers</p>
+              <p>Update <code>i</code> with  multiple things. </p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">Num</span>(<span class="hljs-params">init=[], txt=<span class="hljs-string">&quot; &quot;</span>,at=<span class="hljs-number">0</span></span>): <span class="hljs-comment"># -&gt; Num</span>
-  <span class="hljs-keyword">return</span> inits(init, 
-               o(it=Num, 
-                 n=<span class="hljs-number">0</span>,      <span class="hljs-comment"># count of items</span>
-                 at=at,    <span class="hljs-comment"># column position</span>
-                 txt=txt,  <span class="hljs-comment"># column name </span>
-                 mu=<span class="hljs-number">0</span>,     <span class="hljs-comment"># mean of what what seen</span>
-                 _m2=<span class="hljs-number">0</span>,    <span class="hljs-comment"># second moment (used to find sd)</span>
-                 lo =-BIG, <span class="hljs-comment"># lowest seen</span>
-                 hi =BIG,  <span class="hljs-comment"># largest</span>
-                 heaven=(<span class="hljs-number">0</span> <span class="hljs-keyword">if</span> txt[-<span class="hljs-number">1</span>]==<span class="hljs-string">&quot;-&quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-number">1</span>))) <span class="hljs-comment"># 0,1 = minimize,maximize</span></pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">inits</span>(<span class="hljs-params">things, i</span>): [add(i,thing) <span class="hljs-keyword">for</span> thing <span class="hljs-keyword">in</span> things]; <span class="hljs-keyword">return</span> i</pre></div></div>
             
         </li>
         
@@ -275,6 +266,31 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               
               <div class="sswrap ">
                 <a class="ss" href="#section-11">&#x00a7;</a>
+              </div>
+              <p>Summarize a stream of numbers</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">Num</span>(<span class="hljs-params">init=[], txt=<span class="hljs-string">&quot; &quot;</span>,at=<span class="hljs-number">0</span></span>): <span class="hljs-comment"># -&gt; Num</span>
+  <span class="hljs-keyword">return</span> inits(init, 
+               o(it=Num, 
+                 n=<span class="hljs-number">0</span>,       <span class="hljs-comment"># count of items</span>
+                 at=at,     <span class="hljs-comment"># column position</span>
+                 txt=txt,   <span class="hljs-comment"># column name </span>
+                 mu=<span class="hljs-number">0</span>,      <span class="hljs-comment"># mean of what what seen</span>
+                 _m2=<span class="hljs-number">0</span>,     <span class="hljs-comment"># second moment (used to find sd)</span>
+                 lo =  BIG, <span class="hljs-comment"># lowest seen</span>
+                 hi = -BIG, <span class="hljs-comment"># largest</span>
+                 heaven=(<span class="hljs-number">0</span> <span class="hljs-keyword">if</span> txt[-<span class="hljs-number">1</span>]==<span class="hljs-string">&quot;-&quot;</span> <span class="hljs-keyword">else</span> <span class="hljs-number">1</span>))) <span class="hljs-comment"># 0,1 = minimize,maximize</span></pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-12">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-12">&#x00a7;</a>
               </div>
               <p>Summarize a stream of symbols</p>
 
@@ -289,11 +305,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-12">
+        <li id="section-13">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-12">&#x00a7;</a>
+                <a class="ss" href="#section-13">&#x00a7;</a>
               </div>
               <p>Turn column names into columns (if upper case, then <code>Num</code>. Else <code>Sym</code>).</p>
 
@@ -312,37 +328,22 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-13">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-13">&#x00a7;</a>
-              </div>
-              <p>Keep some <code>rows</code>, summarize them in the <code>cols</code>.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">Data</span>(<span class="hljs-params">init=[]</span>): <span class="hljs-comment"># -&gt; Data</span>
-  init = <span class="hljs-built_in">iter</span>(src)
-  names = <span class="hljs-built_in">next</span>(init) <span class="hljs-comment"># column names </span>
-  <span class="hljs-keyword">return</span> inits(init, o(it=Data, rows = [],           <span class="hljs-comment"># contains the rows</span>
-                                cols = Cols(names))) <span class="hljs-comment"># summaries of the rows </span></pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-14">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
-              <p>Mimic the structure of an existing <code>Data</code>. Optionally, add some rows.</p>
+              <p>Keep some <code>rows</code>, summarize them in the <code>cols</code>.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">clone</span>(<span class="hljs-params">data, rows=[]</span>): <span class="hljs-comment"># -&gt; Data</span>
-  <span class="hljs-keyword">return</span> adds(Data([[col.txt <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]), rows)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">Data</span>(<span class="hljs-params">init=[]</span>): <span class="hljs-comment"># -&gt; Data</span>
+  init = <span class="hljs-built_in">iter</span>(init)
+  names = <span class="hljs-built_in">next</span>(init) <span class="hljs-comment"># column names </span>
+  <span class="hljs-keyword">return</span> inits(init, o(it=Data, n=<span class="hljs-number">0</span>,
+                                rows = [],           <span class="hljs-comment"># contains the rows</span>
+                                cols = Cols(names))) <span class="hljs-comment"># summaries of the rows </span></pre></div></div>
             
         </li>
         
@@ -353,9 +354,12 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-15">&#x00a7;</a>
               </div>
-              <h2 id="update">Update</h2>
+              <p>Mimic the structure of an existing <code>Data</code>. Optionally, add some rows.</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">clone</span>(<span class="hljs-params">data, rows=[]</span>): <span class="hljs-comment"># -&gt; Data</span>
+  <span class="hljs-keyword">return</span> inits(Data([[col.txt <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]), rows)</pre></div></div>
             
         </li>
         
@@ -366,12 +370,43 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
-              <p><code>sub</code> is just <code>add</code>ing -1.</p>
+              <h2 id="def-ent-sd">def ent ,sd</h2>
+<h2 id="read">Read</h2>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">sub</span>(<span class="hljs-params">i,v,purge=<span class="hljs-literal">False</span></span>): <span class="hljs-comment"># -&gt; v</span>
-  <span class="hljs-keyword">return</span> add(iv, n= -<span class="hljs-number">1</span>, purge=purge)</pre></div></div>
+            <div class="content"><div class='highlight'><pre>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">csv</span>(<span class="hljs-params">s</span>):
+  <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(webdata(s) <span class="hljs-keyword">or</span> s, <span class="hljs-string">&#x27;r&#x27;</span>, newline=<span class="hljs-string">&#x27;&#x27;</span>) <span class="hljs-keyword">as</span> f:
+    <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> f:
+      <span class="hljs-keyword">yield</span> [coerce(s) <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> line.strip().split(<span class="hljs-string">&#x27;,&#x27;</span>)]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">webdata</span>(<span class="hljs-params">fn</span>):
+  <span class="hljs-keyword">if</span> fn.startswith(the.get):
+    cdir = os.path.expanduser(the.Got)
+    os.makedirs(cdir, exist_ok=<span class="hljs-literal">True</span>)
+    lfn = fn[<span class="hljs-built_in">len</span>(the.get)+<span class="hljs-number">1</span>:]
+    lpath = os.path.join(cdir, lfn)
+    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> os.path.exists(lpath):
+      rurl = <span class="hljs-string">f&quot;https://github.com/<span class="hljs-subst">{the.get}</span>/tree/master/<span class="hljs-subst">{fn}</span>&quot;</span>
+      urllib.request.urlretrieve(rurl, lpath)
+    <span class="hljs-keyword">return</span> lpath
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__csv</span>():
+  <span class="hljs-string">&quot;Print csv data.&quot;</span>
+  m = <span class="hljs-number">0</span>
+  <span class="hljs-keyword">for</span> n,row <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(csv(the.file)):
+    <span class="hljs-keyword">if</span> n&gt;<span class="hljs-number">0</span>: <span class="hljs-keyword">assert</span>( <span class="hljs-built_in">int</span> <span class="hljs-keyword">is</span> <span class="hljs-built_in">type</span>(row[<span class="hljs-number">0</span>]) )
+    m += <span class="hljs-built_in">len</span>(row)
+    <span class="hljs-keyword">if</span> n%<span class="hljs-number">50</span>==<span class="hljs-number">0</span>: <span class="hljs-built_in">print</span>(n,row)
+  <span class="hljs-keyword">assert</span>(n==<span class="hljs-number">398</span>)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__cols</span>():
+  <span class="hljs-string">&quot;Print csv data.&quot;</span>
+  cols = (lbs,acc,mpg) = Cols( <span class="hljs-built_in">next</span>(csv(the.file))).y
+  <span class="hljs-keyword">assert</span> mpg.heaven==<span class="hljs-number">1</span> <span class="hljs-keyword">and</span> lbs.heaven==<span class="hljs-number">0</span> <span class="hljs-keyword">and</span> acc.at==<span class="hljs-number">6</span>
+  [<span class="hljs-built_in">print</span>(cat(col)) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> cols]</pre></div></div>
             
         </li>
         
@@ -382,35 +417,9 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
-              <p>If <code>v</code> is unknown, then ignore. Else, update.</p>
+              <h2 id="update">Update</h2>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">add</span>(<span class="hljs-params">i,v, n=<span class="hljs-number">1</span>, purge=<span class="hljs-literal">False</span></span>): <span class="hljs-comment"># -&gt; v</span>
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym,s</span>): <span class="hljs-comment"># update symbol counts</span>
-    sym.has[s] = n + sym.has.get(s,<span class="hljs-number">0</span>)
-
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_data</span>(<span class="hljs-params">data,row</span>): <span class="hljs-comment"># keep the new row, update the cols summaries.</span>
-    <span class="hljs-keyword">if</span> n &lt; <span class="hljs-number">0</span>:  
-      <span class="hljs-keyword">if</span> purge: data.rows.remove(v) 
-      [sub(col, row[col.at], col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]  
-    <span class="hljs-keyword">else</span>: 
-      data.rows += [[add(col, row[col.at]) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]
-
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num,n</span>): <span class="hljs-comment"># update lo,hi, mean and _m2 (used in sd calculation) </span>
-    num.lo = <span class="hljs-built_in">min</span>(n, num.lo)
-    num.hi = <span class="hljs-built_in">max</span>(n, num.hi)
-    <span class="hljs-keyword">if</span> n &lt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> num.n &lt; <span class="hljs-number">2</span>: 
-      num._m2 = num.mu = num.n = <span class="hljs-number">0</span>
-    <span class="hljs-keyword">else</span>:
-      d        = n - num.mu
-      num.mu  += n * (d / num.n)
-      num._m2 += n * (d * (v -   num.mu))
-
-  <span class="hljs-keyword">if</span> v != <span class="hljs-string">&quot;?&quot;</span>: 
-    it.n += n
-    (_num <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> (_sym <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Sym <span class="hljs-keyword">else</span> _data))(i,v)
-  <span class="hljs-keyword">return</span> v</pre></div></div>
             
         </li>
         
@@ -421,25 +430,12 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
-              <h2 id="reports">Reports</h2>
+              <p><code>sub</code> is just <code>add</code>ing -1.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
-
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">mids</span>(<span class="hljs-params">data</span>): <span class="hljs-keyword">return</span> [mid(col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]
-
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">mid</span>(<span class="hljs-params">col</span>): 
-  <span class="hljs-keyword">return</span> col.mu <span class="hljs-keyword">if</span> col.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> <span class="hljs-built_in">max</span>(col.has, key=cols.has.get)
-
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">div</span>(<span class="hljs-params">col</span>):
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num</span>):
-    <span class="hljs-keyword">return</span> (<span class="hljs-built_in">max</span>(num.m2,<span class="hljs-number">0</span>)/(num.n - <span class="hljs-number">1</span>))**<span class="hljs-number">0.5</span>
-
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym</span>):
-    <span class="hljs-keyword">return</span> -<span class="hljs-built_in">sum</span>(v/sym.n * math.log(v/sym.n, <span class="hljs-number">2</span>) <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> sym.has.values() <span class="hljs-keyword">if</span> v&gt;<span class="hljs-number">0</span>)
-
-  <span class="hljs-keyword">return</span> (_num <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col)</pre></div></div>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">sub</span>(<span class="hljs-params">i,v,purge=<span class="hljs-literal">False</span></span>): <span class="hljs-comment"># -&gt; v</span>
+  <span class="hljs-keyword">return</span> add(i, v, inc= -<span class="hljs-number">1</span>, purge=purge)</pre></div></div>
             
         </li>
         
@@ -450,30 +446,52 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               <div class="sswrap ">
                 <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
-              <h2 id="bayes">Bayes</h2>
+              <p>If <code>v</code> is unknown, then ignore. Else, update.</p>
 
             </div>
             
-            <div class="content"><div class='highlight'><pre>
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">add</span>(<span class="hljs-params">i,v, inc=<span class="hljs-number">1</span>, purge=<span class="hljs-literal">False</span></span>): <span class="hljs-comment"># -&gt; v</span>
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym,s</span>): <span class="hljs-comment"># update symbol counts</span>
+    sym.has[s] = inc + sym.has.get(s,<span class="hljs-number">0</span>)
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">like</span>(<span class="hljs-params">data, row, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
-  n = <span class="hljs-built_in">len</span>(data.rows)
-  prior = (n + the.k) / (nall + the.k*nh)
-  tmp = [pdf(c,row[c.at], prior, nall, nh) 
-         <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> i.cols.x <span class="hljs-keyword">if</span> row[c.at] != <span class="hljs-string">&quot;?&quot;</span>]
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(math.log(n) <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> tmp + [prior] <span class="hljs-keyword">if</span> n&gt;<span class="hljs-number">0</span>)    
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_data</span>(<span class="hljs-params">data,row</span>): <span class="hljs-comment"># keep the new row, update the cols summaries.</span>
+    <span class="hljs-keyword">if</span> inc &lt; <span class="hljs-number">0</span>:  
+      <span class="hljs-keyword">if</span> purge: data.rows.remove(v) 
+      [sub(col, row[col.at], inc) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]  
+    <span class="hljs-keyword">else</span>: 
+      data.rows += [[add(col, row[col.at],inc) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">pdf</span>(<span class="hljs-params">col,v, prior=<span class="hljs-number">0</span>, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym,s</span>):
-    <span class="hljs-keyword">return</span> (sym.has.get(s,<span class="hljs-number">0</span>) + the.m*prior) / (n + the.m + <span class="hljs-number">1</span>/BIG)
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num,n</span>): <span class="hljs-comment"># update lo,hi, mean and _m2 (used in sd calculation) </span>
+    num.lo = <span class="hljs-built_in">min</span>(n, num.lo)
+    num.hi = <span class="hljs-built_in">max</span>(n, num.hi)
+    <span class="hljs-keyword">if</span> inc &lt; <span class="hljs-number">0</span> <span class="hljs-keyword">and</span> num.n &lt; <span class="hljs-number">2</span>: 
+      num._m2 = num.mu = num.n = <span class="hljs-number">0</span>
+    <span class="hljs-keyword">else</span>:
+      d        = n - num.mu
+      num.mu  += inc * (d / num.n)
+      num._m2 += inc * (d * (n - num.mu))
 
-  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num,n</span>):
-    sd = num.div() <span class="hljs-keyword">or</span> <span class="hljs-number">1</span> / BIG
-    var = <span class="hljs-number">2</span> * sd * sd
-    z = (x - num.mu) ** <span class="hljs-number">2</span> / var
-    <span class="hljs-keyword">return</span> <span class="hljs-built_in">min</span>(<span class="hljs-number">1</span>, <span class="hljs-built_in">max</span>(<span class="hljs-number">0</span>, math.exp(-z) / (<span class="hljs-number">2</span> * math.pi * var) ** <span class="hljs-number">0.5</span>))
-  
-  <span class="hljs-keyword">return</span> (_num <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col,v)</pre></div></div>
+  <span class="hljs-keyword">if</span> v != <span class="hljs-string">&quot;?&quot;</span>: 
+    i.n += inc
+    (_num <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> (_sym <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Sym <span class="hljs-keyword">else</span> _data))(i,v)
+  <span class="hljs-keyword">return</span> v
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__num</span>():
+  <span class="hljs-string">&quot;Demo Numerics.&quot;</span>
+  g=<span class="hljs-keyword">lambda</span>: random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>)
+  num = Num(g() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">256</span>))
+  <span class="hljs-keyword">assert</span> <span class="hljs-number">10</span> &lt; mid(num) &lt; <span class="hljs-number">10.05</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> &lt; div(num) &lt; <span class="hljs-number">2.1</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__sym</span>():
+  <span class="hljs-string">&quot;Demo Symbolics.&quot;</span>
+  sym = Sym(<span class="hljs-string">&quot;aaaabbc&quot;</span>)
+  <span class="hljs-keyword">assert</span> mid(sym) == <span class="hljs-string">&quot;a&quot;</span> <span class="hljs-keyword">and</span> <span class="hljs-number">1</span>,<span class="hljs-number">37</span> &lt; div(sym) &lt; <span class="hljs-number">1.38</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__data</span>(): 
+  <span class="hljs-string">&quot;Read data from disk.&quot;</span>
+  model = Data(csv(the.file)).cols.x[<span class="hljs-number">2</span>]
+  <span class="hljs-keyword">assert</span> <span class="hljs-number">3.69</span> &lt;div( model) &lt; <span class="hljs-number">3.7</span>
+  <span class="hljs-keyword">assert</span> model.lo == <span class="hljs-number">70</span> <span class="hljs-keyword">and</span> model.hi == <span class="hljs-number">82</span></pre></div></div>
             
         </li>
         
@@ -483,6 +501,81 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
               
               <div class="sswrap ">
                 <a class="ss" href="#section-20">&#x00a7;</a>
+              </div>
+              <h2 id="reports">Reports</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">mids</span>(<span class="hljs-params">data</span>): <span class="hljs-keyword">return</span> [mid(col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">divs</span>(<span class="hljs-params">data</span>): <span class="hljs-keyword">return</span> [div(col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">mid</span>(<span class="hljs-params">col</span>): 
+  <span class="hljs-keyword">return</span> col.mu <span class="hljs-keyword">if</span> col.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> <span class="hljs-built_in">max</span>(col.has, key=col.has.get)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">div</span>(<span class="hljs-params">col</span>):
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num</span>):
+    <span class="hljs-keyword">return</span> (<span class="hljs-built_in">max</span>(num._m2,<span class="hljs-number">0</span>)/(num.n - <span class="hljs-number">1</span>))**<span class="hljs-number">0.5</span>
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym</span>):
+    <span class="hljs-keyword">return</span> -<span class="hljs-built_in">sum</span>(v/sym.n * math.log(v/sym.n, <span class="hljs-number">2</span>) <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> sym.has.values() <span class="hljs-keyword">if</span> v&gt;<span class="hljs-number">0</span>)
+
+  <span class="hljs-keyword">return</span> (_num <span class="hljs-keyword">if</span> col.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col)
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__addSub</span>():
+  head, *rows = <span class="hljs-built_in">list</span>(csv(the.file))
+  b4,data = <span class="hljs-literal">None</span>, Data([head])
+  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows: 
+    add(data,row); 
+    <span class="hljs-keyword">if</span> data.n == <span class="hljs-number">50</span>: m0,d0 = mids(data),divs(data)
+  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows[::-<span class="hljs-number">1</span>]:
+    sub(data,row); 
+    <span class="hljs-keyword">if</span> data.n == <span class="hljs-number">50</span>: 
+      <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(math.isclose(a,b,rel_tol=<span class="hljs-number">0.01</span>) <span class="hljs-keyword">for</span> a,b <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(m0, mids(data)))
+      <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(math.isclose(a,b,abs_tol=<span class="hljs-number">0.01</span>) <span class="hljs-keyword">for</span> a,b <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(d0, divs(data)))</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-21">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-21">&#x00a7;</a>
+              </div>
+              <h2 id="bayes">Bayes</h2>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">like</span>(<span class="hljs-params">data, row, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
+  prior = (data.n + the.k) / (nall + the.k*nh)
+  tmp = [pdf(c,row[c.at], prior, nall, nh) 
+         <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> data.cols.x <span class="hljs-keyword">if</span> row[c.at] != <span class="hljs-string">&quot;?&quot;</span>]
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(math.log(n) <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> tmp + [prior] <span class="hljs-keyword">if</span> n&gt;<span class="hljs-number">0</span>)    
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">pdf</span>(<span class="hljs-params">col,v, prior=<span class="hljs-number">0</span>, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym,s</span>):
+    <span class="hljs-keyword">return</span> (sym.has.get(s,<span class="hljs-number">0</span>) + the.m*prior) / (n + the.m + <span class="hljs-number">1</span>/BIG)
+
+  <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num,n</span>):
+    sd = num.div() <span class="hljs-keyword">or</span> <span class="hljs-number">1</span> / BIG
+    var = <span class="hljs-number">2</span> * sd * sd
+    z = (n - num.mu) ** <span class="hljs-number">2</span> / var
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">min</span>(<span class="hljs-number">1</span>, <span class="hljs-built_in">max</span>(<span class="hljs-number">0</span>, math.exp(-z) / (<span class="hljs-number">2</span> * math.pi * var) ** <span class="hljs-number">0.5</span>))
+  
+  <span class="hljs-keyword">return</span> (_num <span class="hljs-keyword">if</span> col.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col,v)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-22">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <h2 id="distance">Distance</h2>
 
@@ -503,7 +596,7 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
     n2 = n2 <span class="hljs-keyword">if</span> n2 != <span class="hljs-string">&quot;?&quot;</span> <span class="hljs-keyword">else</span> (<span class="hljs-number">0</span> <span class="hljs-keyword">if</span> n1 &gt; <span class="hljs-number">0.5</span> <span class="hljs-keyword">else</span> <span class="hljs-number">1</span>)
     <span class="hljs-keyword">return</span> <span class="hljs-built_in">abs</span>(n1 - n2)
  
-  <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> v==<span class="hljs-string">&quot;?&quot;</span> <span class="hljs-keyword">and</span> w==<span class="hljs-string">&quot;?&quot;</span> <span class="hljs-keyword">else</span> (_num <span class="hljs-keyword">if</span> i.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col,v,w)
+  <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> v==<span class="hljs-string">&quot;?&quot;</span> <span class="hljs-keyword">and</span> w==<span class="hljs-string">&quot;?&quot;</span> <span class="hljs-keyword">else</span> (_num <span class="hljs-keyword">if</span> col.it <span class="hljs-keyword">is</span> Num <span class="hljs-keyword">else</span> _sym)(col,v,w)
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">minkowski</span>(<span class="hljs-params">a</span>):
   total, n = <span class="hljs-number">0</span>, <span class="hljs-number">1</span> / BIG
@@ -521,11 +614,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-21">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-21">&#x00a7;</a>
+                <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
               <h2 id="clustering">Clustering</h2>
 
@@ -547,7 +640,7 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
   <span class="hljs-keyword">return</span> ya + project(data,row,a,b) * (yb - ya)  
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">poles</span>(<span class="hljs-params">data</span>): <span class="hljs-comment"># -&gt; List[Row]</span>
-  r0, *some = picks(i.rows, k=the.some + <span class="hljs-number">1</span>)
+  r0, *some = picks(data.rows, k=the.some + <span class="hljs-number">1</span>)
   out = [<span class="hljs-built_in">max</span>(some, key=<span class="hljs-keyword">lambda</span> r1: xdist(data.r1, r0))]
   <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(the.dims):
     out += [<span class="hljs-built_in">max</span>(some, key=<span class="hljs-keyword">lambda</span> r2: <span class="hljs-built_in">sum</span>(xdist(data,r1,r2) <span class="hljs-keyword">for</span> r1 <span class="hljs-keyword">in</span> out))]
@@ -575,11 +668,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-22">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-22">&#x00a7;</a>
+                <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
               <h2 id="tree">Tree</h2>
 
@@ -597,24 +690,23 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
   <span class="hljs-keyword">def</span> <span class="hljs-title function_">_sym</span>(<span class="hljs-params">sym</span>): 
     n,d = <span class="hljs-number">0</span>,{}
     <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows:
-      x = row[i.at] 
-      <span class="hljs-keyword">if</span> x != <span class="hljs-string">&quot;?&quot;</span>:
+      <span class="hljs-keyword">if</span> (x := row[col.at]) != <span class="hljs-string">&quot;?&quot;</span>:
         n = n + <span class="hljs-number">1</span>
         d[x] = d.get(x) <span class="hljs-keyword">or</span> Klass()
         add(d[x], Y(row))
     <span class="hljs-keyword">return</span> o(div = <span class="hljs-built_in">sum</span>(c.n/n * div(c) <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> d.values()),
-             hows = [(<span class="hljs-string">&quot;==&quot;</span>,c.at,k) <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> d.items()])
+             hows = [(<span class="hljs-string">&quot;==&quot;</span>,col.at,k) <span class="hljs-keyword">for</span> k,v <span class="hljs-keyword">in</span> d.items()])
 
   <span class="hljs-keyword">def</span> <span class="hljs-title function_">_num</span>(<span class="hljs-params">num</span>):
     out, b4, lhs, rhs = <span class="hljs-literal">None</span>, <span class="hljs-literal">None</span>, Klass(), Klass()
-    xys = [(r[i.at], add(rhs, Y(r))) <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> rows <span class="hljs-keyword">if</span> r[i.at] != <span class="hljs-string">&quot;?&quot;</span>]
+    xys = [(r[num.at], add(rhs, Y(r))) <span class="hljs-keyword">for</span> r <span class="hljs-keyword">in</span> rows <span class="hljs-keyword">if</span> r[num.at] != <span class="hljs-string">&quot;?&quot;</span>]
     xpect = div(rhs)
     <span class="hljs-keyword">for</span> x, y <span class="hljs-keyword">in</span> <span class="hljs-built_in">sorted</span>(xys, key=<span class="hljs-keyword">lambda</span> xy: x[<span class="hljs-number">0</span>]):
       <span class="hljs-keyword">if</span> x != b4:
         <span class="hljs-keyword">if</span> the.leaf &lt;= lhs.n &lt;= <span class="hljs-built_in">len</span>(xys) - the.leaf:
           tmp = (lhs.n * div(lhs) + rhs.n * div(rhs)) / <span class="hljs-built_in">len</span>(xys)
           <span class="hljs-keyword">if</span> tmp &lt; xpect:
-            xpect, out = tmp, [(<span class="hljs-string">&quot;&lt;=&quot;</span>, i.at, b4), (<span class="hljs-string">&quot;&gt;&quot;</span>, i.at, b4)]
+            xpect, out = tmp, [(<span class="hljs-string">&quot;&lt;=&quot;</span>, num.at, b4), (<span class="hljs-string">&quot;&gt;&quot;</span>, num.at, b4)]
       add(lhs, sub(rhs,y))
       b4 = x
     <span class="hljs-keyword">if</span> out: 
@@ -624,13 +716,13 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">tree</span>(<span class="hljs-params">data1, rows=<span class="hljs-literal">None</span>, Klass=Num, how=<span class="hljs-literal">None</span></span>):
   Y          = <span class="hljs-keyword">lambda</span> row: ydist(data1,row)
-  rows       = rows <span class="hljs-keyword">or</span> i.rows
+  rows       = rows <span class="hljs-keyword">or</span> data1.rows
   data2.kids = []
   data2.how  = how
   data2      = clone(data1, rows)
   data2.ys   = Num(Y(row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows)
   <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(rows) &gt;= the.leaf:
-    cuts = [tmp <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> t.cols.x <span class="hljs-keyword">if</span> (tmp := cuts(c,rows,Y,Klass=Klass))]    
+    cuts = [x <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> data1.cols.x <span class="hljs-keyword">if</span> (x := cuts(c,rows,Y,Klass=Klass))]    
     <span class="hljs-keyword">if</span> cuts:
       <span class="hljs-keyword">for</span> how <span class="hljs-keyword">in</span> <span class="hljs-built_in">sorted</span>(cuts, key=<span class="hljs-keyword">lambda</span> cut: cut.div)[<span class="hljs-number">0</span>].hows:
         rows1 = [row <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows <span class="hljs-keyword">if</span> selects(row, *how)]
@@ -650,7 +742,7 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
   <span class="hljs-keyword">return</span> data1
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">show</span>(<span class="hljs-params">data, key=<span class="hljs-keyword">lambda</span> z:z.ys.mu</span>):
-  stats = i.ys
+  stats = data.ys
   win = <span class="hljs-keyword">lambda</span> x: <span class="hljs-number">100</span>-<span class="hljs-built_in">int</span>(<span class="hljs-number">100</span>*(x-stats.lo)/(stats.mu - stats.lo))
   <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{<span class="hljs-string">&#x27;d2h&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{<span class="hljs-string">&#x27;win&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{<span class="hljs-string">&#x27;n&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span>  &quot;</span>)
   <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{<span class="hljs-string">&#x27;----&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{<span class="hljs-string">&#x27;----&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{<span class="hljs-string">&#x27;----&#x27;</span>:&gt;<span class="hljs-number">4</span>}</span>  &quot;</span>)
@@ -661,16 +753,16 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
     <span class="hljs-keyword">if</span> lvl &gt; <span class="hljs-number">0</span>:
       op,at,y = node.decision
       xplain = <span class="hljs-string">f&quot;<span class="hljs-subst">{data.cols.<span class="hljs-built_in">all</span>[at].txt}</span> <span class="hljs-subst">{op}</span> <span class="hljs-subst">{y}</span>&quot;</span>
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{node.ys.mu:<span class="hljs-number">4.2</span>f}</span> <span class="hljs-subst">{win(node.ys.mu):<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{<span class="hljs-built_in">len</span>(node._rows):<span class="hljs-number">4</span>}</span>    <span class="hljs-subst">{(lvl-<span class="hljs-number">1</span>) * <span class="hljs-string">&#x27;|  &#x27;</span>}</span><span class="hljs-subst">{xplain}</span>&quot;</span> + post)</pre></div></div>
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;<span class="hljs-subst">{node.ys.mu:<span class="hljs-number">4.2</span>f}</span> <span class="hljs-subst">{win(node.ys.mu):<span class="hljs-number">4</span>}</span> <span class="hljs-subst">{node.n:<span class="hljs-number">4</span>}</span>    <span class="hljs-subst">{(lvl-<span class="hljs-number">1</span>) * <span class="hljs-string">&#x27;|  &#x27;</span>}</span><span class="hljs-subst">{xplain}</span>&quot;</span> + post)</pre></div></div>
             
         </li>
         
         
-        <li id="section-23">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-23">&#x00a7;</a>
+                <a class="ss" href="#section-25">&#x00a7;</a>
               </div>
               <h2 id="utils">Utils</h2>
 
@@ -678,37 +770,23 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
             
             <div class="content"><div class='highlight'><pre>
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">moot</span>(<span class="hljs-params">fn</span>):
-  <span class="hljs-keyword">if</span> fn.startswith(<span class="hljs-string">&quot;MOOT/&quot;</span>):
-    cdir = os.path.expanduser(<span class="hljs-string">&quot;~/tmp/moot/&quot;</span>)
-    os.makedirs(cdir, exist_ok=<span class="hljs-literal">True</span>)
-    lfn = fn[<span class="hljs-built_in">len</span>(<span class="hljs-string">&quot;MOOT/&quot;</span>):]
-    lpath = os.path.join(cdir, lfn)
-    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> os.path.exists(lpath):
-      rurl = <span class="hljs-string">f&quot;https://github.com/timm/moot/<span class="hljs-subst">{fn}</span>&quot;</span>
-      urllib.request.urlretrieve(rurl, lpath)
-    <span class="hljs-keyword">return</span> lpath
-
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">csv</span>(<span class="hljs-params">s</span>):
-  <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(moot(s) <span class="hljs-keyword">or</span> s, <span class="hljs-string">&#x27;r&#x27;</span>, newline=<span class="hljs-string">&#x27;&#x27;</span>) <span class="hljs-keyword">as</span> f:
-    <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> f:
-      <span class="hljs-keyword">yield</span> [coerce(s) <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> line.strip().split(<span class="hljs-string">&#x27;,&#x27;</span>)]
-
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">cat</span>(<span class="hljs-params">v</span>): 
   it = <span class="hljs-built_in">type</span>(v)
+  inf = <span class="hljs-built_in">float</span>(<span class="hljs-string">&#x27;inf&#x27;</span>)
   <span class="hljs-keyword">if</span> it <span class="hljs-keyword">is</span> <span class="hljs-built_in">list</span>:  <span class="hljs-keyword">return</span> <span class="hljs-string">&quot;{&quot;</span> + <span class="hljs-string">&quot;, &quot;</span>.join(<span class="hljs-built_in">map</span>(cat, v)) + <span class="hljs-string">&quot;}&quot;</span>
-  <span class="hljs-keyword">if</span> it <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span>: <span class="hljs-keyword">return</span> <span class="hljs-built_in">str</span>(<span class="hljs-built_in">int</span>(x)) <span class="hljs-keyword">if</span> v == <span class="hljs-built_in">int</span>(v) <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;<span class="hljs-subst">{x:<span class="hljs-number">.3</span>g}</span>&quot;</span>
+  <span class="hljs-keyword">if</span> it <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span>: <span class="hljs-keyword">return</span> <span class="hljs-built_in">str</span>(<span class="hljs-built_in">int</span>(v)) <span class="hljs-keyword">if</span> -inf &lt; v &lt; inf <span class="hljs-keyword">and</span> v == <span class="hljs-built_in">int</span>(v) <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;<span class="hljs-subst">{v:<span class="hljs-number">.3</span>g}</span>&quot;</span>
   <span class="hljs-keyword">if</span> it <span class="hljs-keyword">is</span> <span class="hljs-built_in">dict</span>:  <span class="hljs-keyword">return</span> cat([<span class="hljs-string">f&quot;:<span class="hljs-subst">{k}</span> <span class="hljs-subst">{cat(w)}</span>&quot;</span> <span class="hljs-keyword">for</span> k, w <span class="hljs-keyword">in</span> v.items()])
-  <span class="hljs-keyword">return</span> say(v)</pre></div></div>
+  <span class="hljs-keyword">if</span> it <span class="hljs-keyword">in</span> [<span class="hljs-built_in">type</span>(<span class="hljs-built_in">abs</span>), <span class="hljs-built_in">type</span>(cat)]: <span class="hljs-keyword">return</span> v.__name__
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">str</span>(v)</pre></div></div>
             
         </li>
         
         
-        <li id="section-24">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-24">&#x00a7;</a>
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <h2 id="start-up">Start-up</h2>
 

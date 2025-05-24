@@ -516,4 +516,5 @@ pre .hljs-chunk {
 pre .hljs-tex .hljs-formula {
   opacity: 0.5;
 }
-pre { font-size: small;} h2 {border-top: 1px solid #CCC; }p { text-align:right; }
+pre { font-size: small;} h2 {border-top: 1px solid #CCC;}
+p { text-align:right;}

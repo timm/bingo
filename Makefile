@@ -44,7 +44,7 @@ docs/%.html: %.py Makefile etc/head.html ## make doco: .py ==> .html
 	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > docs/$<
 	cd docs; docco -o .  $<; 
 	rm docs/$<
-	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC;}" >>/docs/docco.css
+	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC;}" >> docs/docco.css
 	echo "p { text-align:right;}" >> docs/docco.css
 	gawk '/<h1>/ {print "<div class=docs>";                       \
                 while(getline x < "etc/head.html") {print x}; \

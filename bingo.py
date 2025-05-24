@@ -46,11 +46,13 @@ Options, with their (defaults):
 import urllib.request, random, math, sys, re, os
 
 sys.dont_write_bytecode = True
-pick=random.choice
-picks=random.choices
-BIG=1E32
+pick = random.choice
+picks = random.choices
+BIG = 1E32
 
+# <!-- docString | modules)_ _(infohiding | Parnas | decomposition -->
 ### Command-line  --------------------------------------------------------------
+# <!-- Teneary sysarvc, enumerate,ites=ms -->
 
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
@@ -88,6 +90,7 @@ def eg__all():
         random.seed(the.rseed)
         fun()
 
+# _(config | configCrisis | hpo | reflection)_
 ### Settings  ------------------------------------------------------------------
 # Structs with named fields + pretty print.
 class o:
