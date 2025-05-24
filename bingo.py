@@ -50,9 +50,9 @@ pick = random.choice
 picks = random.choices
 BIG = 1E32
 
-# <!-- docString | modules)_ _(infohiding | Parnas | decomposition -->
+# _(docString | modules)_ _(infohiding | Parnas | decomposition)_
+
 ### Command-line  --------------------------------------------------------------
-# <!-- Teneary sysarvc, enumerate,ites=ms -->
 
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
@@ -69,7 +69,7 @@ def cli(d):
 def coerce(x):
   for what in (int, float):
     try: return what(x)
-    except: pass
+    except Exception: pass
   x = x.strip()
   y = x.lower()
   return (y == "true") if y in ("true", "false") else x
@@ -90,7 +90,9 @@ def eg__all():
         random.seed(the.rseed)
         fun()
 
+# _(Teneary | sysarvc | enumerate | items | randomSeed | firstClass)_
 # _(config | configCrisis | hpo | reflection)_
+
 ### Settings  ------------------------------------------------------------------
 # Structs with named fields + pretty print.
 class o:
@@ -105,6 +107,9 @@ the= o(**{m[1]: coerce(m[2])
 def eg__the() -> None:
   "Print the configuration."
   print(the)
+
+# _(functionalProgramming | comprehesions | listcomp | dictcomp )_
+# _(__dict__, *l, **d)_ _(regx, dsl)_
 
 ### Create ---------------------------------------------------------------------
 # Update `i` with  multiple things. 
@@ -175,10 +180,10 @@ def eg__csv():
   "Print csv data."
   m = 0
   for n,row in enumerate(csv(the.file)):
-    if n>0: assert( int is type(row[0]) )
+    if n>0: assert int is type(row[0]) 
     m += len(row)
     if n%50==0: print(n,row)
-  assert(n==398)
+  assert n==398
 
 def eg__cols():
   "Print csv data."
@@ -255,10 +260,10 @@ def eg__addSub():
   head, *rows = list(csv(the.file))
   b4,data = None, Data([head])
   for row in rows: 
-    add(data,row); 
+    add(data,row) 
     if data.n == 50: m0,d0 = mids(data),divs(data)
   for row in rows[::-1]:
-    sub(data,row); 
+    sub(data,row) 
     if data.n == 50: 
       assert all(math.isclose(a,b,rel_tol=0.01) for a,b in zip(m0, mids(data)))
       assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, divs(data)))
