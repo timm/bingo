@@ -173,7 +173,7 @@ def eg__csv():
     if n>0: assert int is type(row[0]) 
     m += len(row)
     if n%50==0: print(n,row)
-  assert m==398
+  assert m==3192
 
 def eg__cols():
   "Print csv data."
@@ -271,12 +271,21 @@ def pdf(col,v, prior=0):
     return (sym.has.get(s,0) + the.m*prior) / (col.n + the.m + 1/BIG)
 
   def _num(num,n):
-    sd = num.div() or 1 / BIG
+    sd = div(num) or 1 / BIG
     var = 2 * sd * sd
     z = (n - num.mu) ** 2 / var
     return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
   
   return (_num if col.it is Num else _sym)(col,v)
+
+def eg__bayes():
+  data = Data(csv(the.file))
+  L = lambda r: round(like(data,r),2)
+  F = lambda a: print(' '.join([f"{x:>8}" for x in a]))
+  assert all(-20 < L(row) < -9 for row in data.rows)
+  rows = [[L(row)] + row for row in sorted(data.rows, key=L)[::30]]
+  head = ["Like"] + [col.txt for col in data.cols.all]
+  report(rows,head,1)
 
 ### Distance ------------------------------------------------------------------
 def norm(i,v):
@@ -298,14 +307,23 @@ def minkowski(a):
   total, n = 0, 1 / BIG
   for x in a:
     n += 1
-    total += x**the.P
-  return (total / n)**(1 / the.P)
+    total += x**the.p
+  return (total / n)**(1 / the.p)
 
 def ydist(data, row):  
   return minkowski(abs(norm(c,row[c.at]) - c.heaven) for c in data.cols.y)
 
 def xdist(data, row1, row2):  
   return minkowski(dist(c,row1[c.at], row2[c.at]) for c in data.cols.x)
+
+def eg__ydist():
+  data = Data(csv(the.file))
+  L = lambda r: round(like(data,r),2)
+  Y = lambda r: round(ydist(data,r),2)
+  assert all(0 <= Y(row) <= 1 for row in data.rows)
+  rows = [[Y(row),L(row)] + row for row in sorted(data.rows, key=Y)[::30]]
+  head = ["Y","Like"] + [col.txt for col in data.cols.all]
+  report(rows,head,1)
 
 ### Clustering ----------------------------------------------------------------
 def project(data, row, a, b): # -> 0,1,2 .. the.bins-1
@@ -430,6 +448,18 @@ def cat(v):
   if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
   if it in [type(abs), type(cat)]: return v.__name__
   return str(v)
+
+def report(rows, head, decs=2):
+  w=[0] * len(head)
+  Str  = lambda x   : f"{x:.{decs}f}"     if type(x) is float else str(x)
+  say  = lambda w,x : f"{x:>{w}.{decs}f}" if type(x) is float else f"{x:>{w}}"
+  says = lambda row : ' |  '.join([say(w1, x) for w1, x in zip(w, row)])
+  for row in [head]+rows: 
+    w = [max(b4, len(Str(x))) for b4,x in zip(w,row)]
+  print(says(head))
+  print(' |  '.join('-'*(w1) for w1 in w))
+  for row in rows: print(says(row))
+
 
 ### Start-up ------------------------------------------------------------------
 def main():
