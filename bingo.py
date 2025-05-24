@@ -36,6 +36,7 @@ Options, with their (defaults):
    -f file   csv file for data (../moot/optimize/misc/auto93.csv)
    -G Got    directory to cache downloaded data files (~/tmp/moot)
    -g get    github repo storing example data files (timm/moot)      
+   -K Ksee   sample size, when seeking centroids (256)
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
    -p p      minkowski coefficient  (2)
@@ -316,6 +317,26 @@ def ydist(data, row):
 def xdist(data, row1, row2):  
   return minkowski(dist(c,row1[c.at], row2[c.at]) for c in data.cols.x)
 
+def kpp(data, k=10, rows=None, few=None):
+    def D(x, y):
+      key = tuple(sorted((id(x), id(y))))
+      if key not in mem: mem[key] = xdist(data,x,y)
+      return mem[key] 
+    
+    few = few or the.Ksee
+    row,  *rows    = shuffle(rows or data.rows)
+    some, rest     = rows[:few], rows[few:] 
+    centroids, mem = [row], {}
+    for _ in range(1, k):
+      dists = [min(D(x, y)**2 for y in centroids) for x in some]
+      r     = random.random() * sum(dists)
+      for j, d in enumerate(dists):
+        r -= d
+        if r <= 0:
+          centroids.append(some.pop(j))
+          break
+    return centroids, mem, some + rest
+
 def eg__ydist():
   data = Data(csv(the.file))
   L = lambda r: round(like(data,r),2)
@@ -324,6 +345,19 @@ def eg__ydist():
   rows = [[Y(row),L(row)] + row for row in sorted(data.rows, key=Y)[::30]]
   head = ["Y","Like"] + [col.txt for col in data.cols.all]
   report(rows,head,1)
+
+def eg__kpp():
+  "Diversity sample: random vs kpp. Try a few times  with -r $RANDOM --kpp."
+  data = Data(csv(the.file))
+  repeats=20
+  Y = lambda row: ydist(data,row)
+  best = lambda rows: Y(sorted(rows, key=Y)[0])
+  for k in [10,20,30,40,80,160]:
+    print(k,"samples")
+    anys = Num(best(picks(data.rows,k=k))    for _ in range(repeats))
+    print("\t\trandom", o(repeats=anys.n, lo=anys.lo, mu=anys.mu, hi=anys.hi, D=0.35*div(anys)))
+    kpps = Num(best(kpp(data,       k=k)[0]) for _ in range(repeats))
+    print("\t\tkpps  ", o(repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
 
 ### Clustering ----------------------------------------------------------------
 def project(data, row, a, b): # -> 0,1,2 .. the.bins-1
@@ -460,6 +494,9 @@ def report(rows, head, decs=2):
   print(' |  '.join('-'*(w1) for w1 in w))
   for row in rows: print(says(row))
 
+def shuffle(a):
+  random.shuffle(a)
+  return a
 
 ### Start-up ------------------------------------------------------------------
 def main():
