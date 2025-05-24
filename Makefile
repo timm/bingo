@@ -13,14 +13,14 @@ HIGH = \033[1;33m#
 SOFT = \033[0m#
 
 Top=$(shell git rev-parse --show-toplevel)
-Tmp  ?= $(HOME)/tmp 
+Tmp ?= $(HOME)/tmp 
 
 .PHONY: help
 
-help: ## Show this help.
+help: ## show help.
 	@gawk '\
 		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nHelp:\n"} \
-    /^[a-zA-Z_-]+:.*?##/ {printf "  \033[36m%-25s\033[0m %s\n", $$1, $$2 } \
+    /^[a-zA-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-15s\033[0m %s\n", $$1, $$2) | "sort" } \
 	' $(MAKEFILE_LIST)
 	
 pull: ## update from main
@@ -40,11 +40,12 @@ lint: ## lint all python in this directory
 		    --disable=C0410,C0115,C3001,R0903,E1101 \
 		    --disable=E701,W0108,W0106,W0718,W0201   *.py
 
-docs/%.html : %.py  Makefile etc/head.html
+docs/%.html: %.py Makefile etc/head.html ## make doco: .py ==> .html
 	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > docs/$<
 	cd docs; docco -o .  $<; 
 	rm docs/$<
-	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC; }p { text-align:right; }" >> docs/docco.css
+	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC;}" >>/docs/docco.css
+	echo "p { text-align:right;}" >> docs/docco.css
 	gawk '/<h1>/ {print "<div class=docs>";                       \
                 while(getline x < "etc/head.html") {print x}; \
                 print "<h1>'$<'</h1></div>";                  \
@@ -52,11 +53,11 @@ docs/%.html : %.py  Makefile etc/head.html
 	mv tmp.tmp $@
 	open $@
 
-docs/%.pdf: %.py  Makefile ## make doco: .py ==> .pdf
+docs/%.pdf: %.py Makefile ## make doco: .py ==> .pdf
 	echo "pdf-ing $@ ... "
-	a2ps                 \
-		-Br                 \
-		--portrait           \
+	a2ps                  \
+		-Br                  \
+		--portrait            \
 		--file-align=fill      \
 		--line-numbers=1        \
 		--pro=color              \
@@ -64,7 +65,7 @@ docs/%.pdf: %.py  Makefile ## make doco: .py ==> .pdf
 		--borders=no               \
 	    --left-footer="$<  "      \
 	    --right-footer="page %s. of %s#"  \
-		--columns 2                  \
-		-M letter                     \
+		--columns 2                          \
+		-M letter                             \
 		-o - $< | ps2pdf - $@
 	open $@

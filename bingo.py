@@ -33,7 +33,7 @@ Options, with their (defaults):
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
    -d dims   number of dimensions (4)
-   -f file   csv file for data (../../moot/optimize/misc/auto93.csv)
+   -f file   csv file for data (../moot/optimize/misc/auto93.csv)
    -G Got    directory to cache downloaded data files (~/tmp/moot)
    -g get    github repo storing example data files (timm/moot)      
    -k k      Bayes hack for rare classes  (1)
@@ -42,7 +42,6 @@ Options, with their (defaults):
    -r rseed  random number seed (1234567891)
    -z zero   ignore bins with zero items; 0=auto choose (0)
    -h        show help
-
 """
 import urllib.request, random, math, sys, re, os
 
@@ -187,7 +186,7 @@ def eg__cols():
 ### Update --------------------------------------------------------------------
 # `sub` is just `add`ing -1.
 def sub(i,v,purge=False): # -> v
-  return add(i, inc= -1, purge=purge)
+  return add(i, v, inc= -1, purge=purge)
 
 # If `v` is unknown, then ignore. Else, update.
 def add(i,v, inc=1, purge=False): # -> v
@@ -197,7 +196,7 @@ def add(i,v, inc=1, purge=False): # -> v
   def _data(data,row): # keep the new row, update the cols summaries.
     if inc < 0:  
       if purge: data.rows.remove(v) 
-      [sub(col, row[col.at], col, inc) for col in data.cols.all]  
+      [sub(col, row[col.at], inc) for col in data.cols.all]  
     else: 
       data.rows += [[add(col, row[col.at],inc) for col in data.cols.all]]
 
@@ -216,12 +215,22 @@ def add(i,v, inc=1, purge=False): # -> v
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
 
+def eg__num():
+  "Demo Numerics."
+  g=lambda: random.gauss(10,2)
+  num = Num(g() for _ in range(256))
+  assert 10 < mid(num) < 10.05 and 2 < div(num) < 2.1
+
+def eg__sym():
+  "Demo Symbolics."
+  sym = Sym("aaaabbc")
+  assert mid(sym) == "a" and 1,37 < div(sym) < 1.38
+
 def eg__data(): 
+  "Read data from disk."
   model = Data(csv(the.file)).cols.x[2]
   assert 3.69 <div( model) < 3.7
   assert model.lo == 70 and model.hi == 82
-
-# def add sub
 
 ### Reports -------------------------------------------------------------------
 def mids(data): return [mid(col) for col in data.cols.all]
@@ -238,7 +247,18 @@ def div(col):
 
   return (_num if col.it is Num else _sym)(col)
 
-### Bayes ---------------------------------------------------------------------
+def eg__addSub():
+  head, *rows = list(csv(the.file))
+  b4,data = None, Data([head])
+  for row in rows: 
+    add(data,row)
+    if data.n == 50: b4 = mids(data)
+  for row in rows[::-1]:
+    sub(data,row)
+    if data.n == 50: 
+      assert all(math.isclose(a,b,rel_tol=0.001) for a,b in zip(b4, mids(data)))
+
+### Bayes ----------------------------------------------------------------------
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at], prior, nall, nh) 
