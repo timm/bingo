@@ -251,10 +251,10 @@ def eg__addSub():
   head, *rows = list(csv(the.file))
   b4,data = None, Data([head])
   for row in rows: 
-    add(data,row)
+    add(data,row); print(data.n)
     if data.n == 50: b4 = mids(data)
   for row in rows[::-1]:
-    sub(data,row)
+    sub(data,row); print(data.n)
     if data.n == 50: 
       assert all(math.isclose(a,b,rel_tol=0.001) for a,b in zip(b4, mids(data)))
 
