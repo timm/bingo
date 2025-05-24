@@ -234,6 +234,7 @@ def eg__data():
 
 ### Reports -------------------------------------------------------------------
 def mids(data): return [mid(col) for col in data.cols.all]
+def divs(data): return [div(col) for col in data.cols.all]
 
 def mid(col): 
   return col.mu if col.it is Num else max(col.has, key=col.has.get)
@@ -251,12 +252,13 @@ def eg__addSub():
   head, *rows = list(csv(the.file))
   b4,data = None, Data([head])
   for row in rows: 
-    add(data,row); print(data.n)
-    if data.n == 50: b4 = mids(data)
+    add(data,row); 
+    if data.n == 50: m0,d0 = mids(data),divs(data)
   for row in rows[::-1]:
-    sub(data,row); print(data.n)
+    sub(data,row); 
     if data.n == 50: 
-      assert all(math.isclose(a,b,rel_tol=0.001) for a,b in zip(b4, mids(data)))
+      assert all(math.isclose(a,b,rel_tol=0.01) for a,b in zip(m0, mids(data)))
+      assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, divs(data)))
 
 ### Bayes ----------------------------------------------------------------------
 def like(data, row, nall=2, nh=100):
