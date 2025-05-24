@@ -29,10 +29,10 @@ bingo.py: stochastic landscape analysis for multi objective reasoning
 Options, with their (defaults):
   
    -B Bins   number of bins (10)
-   -d dims   number of dimensions (4)
    -a a      rows labelled at random during cold start (4)
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
+   -d dims   number of dimensions (4)
    -f file   csv file for data (../../moot/optimize/misc/auto93.csv)
    -G Got    directory to cache downloaded data files (~/tmp/moot)
    -g get    github repo storing example data files (timm/moot)      
