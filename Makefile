@@ -37,8 +37,8 @@ sh: ## run my shell
 lint: ## lint all python in this directory
 	export PYTHONPATH="..:$$PYTHONPATH"; \
 	pylint --disable=W0311,C0303,C0116,C0321,C0103 \
-		    --disable=C0410,C0115,C3001,R0903,E1101 \
-		    --disable=E701,W0108,W0106,W0718,W0201   *.py
+		     --disable=C0410,C0115,C3001,R0903,E1101,E1120,R1726 \
+		     --disable=W0108,W0106,W0718,W0201,W0102,W0212,R1710  *.py
 
 docs/%.html: %.py Makefile etc/head.html ## make doco: .py ==> .html
 	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > docs/$<
@@ -69,3 +69,19 @@ docs/%.pdf: %.py Makefile ## make doco: .py ==> .pdf
 		-M letter                             \
 		-o - $< | ps2pdf - $@
 	open $@
+
+
+# push:
+# 	git add -A ../LICENSE.md *.md # Or more specific files
+# 	git commit -m "docs: Update headers and license" # Or prompt for message
+# 	git push
+
+# # Redefine ONE and TWOPLUS for standard Markdown spacing (one blank line)
+# ONE_CMD = awk 'BEGIN {RS=""; ORS="\n\n"} {print $$0; exit}' $<
+# TWOPLUS_CMD = awk 'BEGIN {RS=""; ORS="\n\n"} NR > 1 {print $$0}' $@
+# # Note: ORS="\n\n" means one paragraph, then two newlines (so one blank line follows)
+#
+# # Then in your rules:
+# # ...
+# @($(ONE_CMD); $(TWOPLUS_CMD)) > .tmp; mv .tmp $@
+# # ...

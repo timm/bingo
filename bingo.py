@@ -50,10 +50,7 @@ pick = random.choice
 picks = random.choices
 BIG = 1E32
 
-# _(docString | modules)_ _(infohiding | Parnas | decomposition)_
-
 ### Command-line  --------------------------------------------------------------
-
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
 # flags reverse old value. e.g. `-v `negates  (e.g.) `d["verbose"]=False`.
@@ -90,9 +87,6 @@ def eg__all():
         random.seed(the.rseed)
         fun()
 
-# _(Teneary | sysarvc | enumerate | items | randomSeed | firstClass)_
-# _(config | configCrisis | hpo | reflection)_
-
 ### Settings  ------------------------------------------------------------------
 # Structs with named fields + pretty print.
 class o:
@@ -107,9 +101,6 @@ the= o(**{m[1]: coerce(m[2])
 def eg__the() -> None:
   "Print the configuration."
   print(the)
-
-# _(functionalProgramming | comprehesions | listcomp | dictcomp )_
-# _(__dict__, *l, **d)_ _(regx, dsl)_
 
 ### Create ---------------------------------------------------------------------
 # Update `i` with  multiple things. 
@@ -137,14 +128,14 @@ def Sym(init=[], txt=" ",at=0):  # -> Sym
 
 # Turn column names into columns (if upper case, then `Num`. Else `Sym`).
 def Cols(names): # -> Cols
-  all,x,y = [],[],[]  
+  cols,x,y = [],[],[]  
   for c,s in enumerate(names):
-    all += [(Num if s[0].isupper() else Sym)(txt=s,at=c)]
+    cols += [(Num if s[0].isupper() else Sym)(txt=s,at=c)]
     if s[-1] != "X": # what to ignore 
-      (y if s[-1] in "+-" else x).append(all[-1])
-  return o(it=Cols,all=all, # all the columns
-                   x=x,     # just the x columns
-                   y=y)     # just the y columns 
+      (y if s[-1] in "+-" else x).append(cols[-1])
+  return o(it=Cols,all=cols, # all the columns
+                   x=x,      # just the x columns
+                   y=y)      # just the y columns 
 
 # Keep some `rows`, summarize them in the `cols`.
 def Data(init=[]): # -> Data
@@ -158,10 +149,9 @@ def Data(init=[]): # -> Data
 def clone(data, rows=[]): # -> Data
   return inits(Data([[col.txt for col in data.cols.all]]), rows)
 
-### def ent ,sd
 ### Read --------------------------------------------------------------------
 def csv(s):
-  with open(webdata(s) or s, 'r', newline='') as f:
+  with open(webdata(s) or s, 'r', newline='', encoding='utf-8') as f:
     for line in f:
       yield [coerce(s) for s in line.strip().split(',')]
 
@@ -183,7 +173,7 @@ def eg__csv():
     if n>0: assert int is type(row[0]) 
     m += len(row)
     if n%50==0: print(n,row)
-  assert n==398
+  assert m==398
 
 def eg__cols():
   "Print csv data."
@@ -258,26 +248,27 @@ def div(col):
 
 def eg__addSub():
   head, *rows = list(csv(the.file))
-  b4,data = None, Data([head])
+  data = Data([head])
   for row in rows: 
     add(data,row) 
     if data.n == 50: m0,d0 = mids(data),divs(data)
   for row in rows[::-1]:
     sub(data,row) 
     if data.n == 50: 
-      assert all(math.isclose(a,b,rel_tol=0.01) for a,b in zip(m0, mids(data)))
-      assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, divs(data)))
+      m1,d1 = mids(data), divs(data)
+      assert all(math.isclose(a,b,rel_tol=0.01) for a,b in zip(m0, m1))
+      assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, d1))
 
 ### Bayes ----------------------------------------------------------------------
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
-  tmp = [pdf(c,row[c.at], prior, nall, nh) 
+  tmp = [pdf(c,row[c.at],prior) 
          for c in data.cols.x if row[c.at] != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
-def pdf(col,v, prior=0, nall=2, nh=100):
+def pdf(col,v, prior=0):
   def _sym(sym,s):
-    return (sym.has.get(s,0) + the.m*prior) / (n + the.m + 1/BIG)
+    return (sym.has.get(s,0) + the.m*prior) / (col.n + the.m + 1/BIG)
 
   def _num(num,n):
     sd = num.div() or 1 / BIG
@@ -292,7 +283,7 @@ def norm(i,v):
   return v if (v=="?" or i.it is not Num) else (v - i.lo)/(i.hi - i.lo + 1/BIG)
 
 def dist(col,v,w):
-  def _sym(sym,s1,s2):
+  def _sym(_,s1,s2):
     return s1 != s2 
 
   def _num(num,n1,n2):
@@ -337,10 +328,10 @@ def poles(data): # -> List[Row]
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
   return out
 
-def lsh(data, poles): # -> Dict[Tuple, List[Row]]
+def lsh(data, corners): # -> Dict[Tuple, List[Row]]
   buckets = {}
   for row in data.rows:
-    k = tuple(bucket(row, a, b) for a, b in zip(poles, poles[1:]))
+    k = tuple(bucket(row, a, b) for a, b in zip(corners, corners[1:]))
     buckets[k] = buckets.get(k) or clone(data)
     add(buckets[k], row)
   return buckets
@@ -361,18 +352,18 @@ ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
 
-def selects(row, op, at, y): x=row[op]; return  x=="?" or ops[op](x,y) 
+def selects(row, op, at, y): x=row[at]; return  x=="?" or ops[op](x,y) 
 
 def cuts(col,rows,Y,Klass): 
   def _sym(sym): 
     n,d = 0,{}
     for row in rows:
-      if (x := row[col.at]) != "?":
+      if (x := row[sym.at]) != "?":
         n = n + 1
         d[x] = d.get(x) or Klass()
         add(d[x], Y(row))
     return o(div = sum(c.n/n * div(c) for c in d.values()),
-             hows = [("==",col.at,k) for k,v in d.items()])
+             hows = [("==",sym.at,k) for k,v in d.items()])
 
   def _num(num):
     out, b4, lhs, rhs = None, None, Klass(), Klass()
@@ -391,21 +382,19 @@ def cuts(col,rows,Y,Klass):
 
   return (_sym if col.it is Sym else _num)(col)
 
-def tree(data1, rows=None, Klass=Num, how=None):
-  Y          = lambda row: ydist(data1,row)
-  rows       = rows or data1.rows
-  data2.kids = []
-  data2.how  = how
-  data2      = clone(data1, rows)
-  data2.ys   = Num(Y(row) for row in rows)
-  if len(rows) >= the.leaf:
-    cuts = [x for c in data1.cols.x if (x := cuts(c,rows,Y,Klass=Klass))]    
-    if cuts:
-      for how in sorted(cuts, key=lambda cut: cut.div)[0].hows:
-        rows1 = [row for row in rows if selects(row, *how)]
-        if the.leaf <= len(rows1) < len(rows):
-          data2.kids += [tree(data1, rows1, Klass=Klass, how=how)]  
-  return data2
+def tree(data, Klass=Num, Y=None, how=None):
+  Y         = Y or (lambda row: ydist(data,row))
+  data.kids = []
+  data.how  = how
+  data.ys   = Num(Y(row) for row in data.rows)
+  if data.n >= the.leaf:
+    tmp = [x for c in data.cols.x if (x := cuts(c,data.rows,Y,Klass=Klass))]    
+    if tmp:
+      for how1 in sorted(tmp, key=lambda cut: cut.div)[0].hows:
+        rows1 = [row for row in data.rows if selects(row, *how1)]
+        if the.leaf <= len(rows1) < data.n:
+          data.kids += [tree(clone(data,rows1), Klass, Y, how1)]  
+  return data
 
 def nodes(data1, lvl=0, key=None): 
   yield lvl, data1
@@ -443,9 +432,12 @@ def cat(v):
   return str(v)
 
 ### Start-up ------------------------------------------------------------------
-if __name__ == "__main__":
+def main():
   cli(the.__dict__)
-  for n, s in enumerate(sys.argv):
+  for s in sys.argv:
     if fun := globals().get("eg" + s.replace("-", "_")):
       random.seed(the.rseed)
       fun()
+
+if __name__ == "__main__": main()
+  
