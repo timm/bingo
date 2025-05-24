@@ -7,6 +7,7 @@
 SHELL     := bash
 MAKEFLAGS += --warn-undefined-variables
 .SILENT:
+VPATH = .:..
 
 LOUD = \033[1;34m##
 HIGH = \033[1;33m#
@@ -40,14 +41,14 @@ lint: ## lint all python in this directory
 		     --disable=C0410,C0115,C3001,R0903,E1101,E1120,R1726 \
 		     --disable=W0108,W0106,W0718,W0201,W0102,W0212,R1710  *.py
 
-docs/%.html: %.py Makefile etc/head.html ## make doco: .py ==> .html
-	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > docs/$<
-	cd docs; docco -o .  $<; 
-	rm docs/$<
-	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC;}" >> docs/docco.css
-	echo "p { text-align:right;}" >> docs/docco.css
+docs/%.html: %.py $(Top)/Makefile $(Top)/etc/head.html ## make doco: .py ==> .html
+	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > $(Top)/docs/$<
+	cd $(Top)/docs; docco -o .  $<; 
+	rm $(Top)/docs/$<
+	echo "pre { font-size: small;} h2 {border-top: 1px solid #CCC;}" >> $(Top)/docs/docco.css
+	echo "p { text-align:right;}" >> $(Top)/docs/docco.css
 	gawk '/<h1>/ {print "<div class=docs>";                       \
-                while(getline x < "etc/head.html") {print x}; \
+                while(getline x < "$(Top)/etc/head.html") {print x}; \
                 print "<h1>'$<'</h1></div>";                  \
                 next} 1' $@ > tmp.tmp
 	mv tmp.tmp $@

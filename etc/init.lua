@@ -212,3 +212,12 @@ vim.api.nvim_create_autocmd("FileType", {
     vim.bo.softtabstop = 2
   end,
 })
+
+
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = "*",
+  group = vim.api.nvim_create_augroup("UserTermNoModifiable", { clear = true }), -- Optional: Good practice to group autocommands
+  callback = function()
+    vim.opt_local.modifiable = false -- or vim.bo.modifiable = false
+  end,
+})
