@@ -352,12 +352,14 @@ def eg__kpp():
   repeats=20
   Y = lambda row: ydist(data,row)
   best = lambda rows: Y(sorted(rows, key=Y)[0])
+  b4 = Num(Y(row) for row in data.rows)
+  print("b4     ", o(Ksee=len(data.rows), repeats=1, lo=b4.lo, mu=b4.mu, hi=b4.hi))
   for k in [10,20,30,40,80,160]:
-    print(k,"samples")
+    print("")
     anys = Num(best(picks(data.rows,k=k))    for _ in range(repeats))
-    print("\t\trandom", o(repeats=anys.n, lo=anys.lo, mu=anys.mu, hi=anys.hi, D=0.35*div(anys)))
+    print("random ", o(Ksee=k, repeats=anys.n, lo=anys.lo, mu=anys.mu, hi=anys.hi, D=0.35*div(anys)))
     kpps = Num(best(kpp(data,       k=k)[0]) for _ in range(repeats))
-    print("\t\tkpps  ", o(repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
+    print("kpps   ", o(Ksee=k, repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
 
 ### Clustering ----------------------------------------------------------------
 def project(data, row, a, b): # -> 0,1,2 .. the.bins-1
