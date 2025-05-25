@@ -26,8 +26,8 @@ help: ## show help.
 
 loc: ## REport loc
 	cat bingo.py \
-	| gawk '!/^#/ && !/^\f#/' \
-	| gawk 'BEGIN {RS="";FS="\n"} /def eg_/ {next} {print $$0 "\n"}' |wc
+	| gawk '!/^#/ && !/^\f#/'  \
+	| gawk 'BEGIN {RS="";FS="\n"} /^(def eg_|files)/ {next} {n+= NF} END {print n}'
 
 pull: ## update from main
 	git pull

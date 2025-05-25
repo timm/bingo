@@ -50,7 +50,6 @@ picks = random.choices
 BIG = 1E32
 
 ### Command-line  --------------------------------------------------------------
-
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
 # flags reverse old value. e.g. `-v `negates  (e.g.) `d["verbose"]=False`.
@@ -88,7 +87,6 @@ def eg__all():
         fun()
 
 ### Settings  ------------------------------------------------------------------
-
 # Structs with named fields + pretty print.
 class o:
   __init__= lambda i, **d: i.__dict__.update(**d)
@@ -103,8 +101,7 @@ def eg__the() -> None:
   "Print the configuration."
   print(the)
 
-### Create ---------------------------------------------------------------------
-
+### Create ---------------------------------------------------------------------
 # Update `i` with  multiple things. 
 def inits(things, i): [add(i,thing) for thing in things]; return i
 
@@ -152,7 +149,6 @@ def clone(data, rows=[]): # -> Data
   return inits(rows, Data([[col.txt for col in data.cols.all]]))
 
 ### Read --------------------------------------------------------------------
-
 # Iterate over rows in file `s`.
 def csv(s):
   with open(s, 'r', newline='', encoding='utf-8') as f:
@@ -175,7 +171,6 @@ def eg__cols():
   [print(cat(col)) for col in cols]
  
 ### Update --------------------------------------------------------------------
-
 # `sub` is just `add`ing -1.
 def sub(i,v,purge=False): # -> v
   return add(i, v, inc= -1, purge=purge)
@@ -232,7 +227,6 @@ def eg__clone():
   assert data1.cols.y[2]._m2 == data2.cols.y[2]._m2
  
 ### Reports -------------------------------------------------------------------
-
 def mids(data): return [mid(col) for col in data.cols.all]
 def divs(data): return [div(col) for col in data.cols.all]
 
@@ -262,7 +256,6 @@ def eg__addSub():
       assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, d1))
 
 ### Bayes ----------------------------------------------------------------------
-
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at],prior) 
@@ -291,7 +284,6 @@ def eg__bayes():
   report(rows,head,1)
 
 ### Distance ------------------------------------------------------------------
-
 def norm(i,v):
   return v if (v=="?" or i.it is not Num) else (v - i.lo)/(i.hi - i.lo + 1/BIG)
 
@@ -369,7 +361,6 @@ def eg__kpp():
     print("kpps   ", o(Ksee=k, repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
 
 ### Clustering ----------------------------------------------------------------
-
 def project(data, row, a, b): # -> 0,1,2 .. the.Bins-1
   D = lambda row1,row2: xdist(data,row1,row2)
   c = D(a,b)
@@ -390,13 +381,15 @@ def corners(data): # -> List[Row]
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
   return out
 
+# Why and How You Should (Still) Use DBSCA
 def buckets(data, crnrs): # -> Dict[Tuple, List[Row]]
   buckets = {}
   for row in data.rows:
     k = tuple(bucket(data,row, a, b) for a, b in zip(crnrs, crnrs[1:]))
     buckets[k] = buckets.get(k) or clone(data)
     add(buckets[k], row)
-  return buckets
+  minPts = max(4, 2*the.dims)
+  return {k:data for k,data in buckets.items() if len(data.rows)>=minPts}
 
 def neighbors(c, hi):
   def go(i, p):
@@ -414,88 +407,25 @@ def eg__corners():
   crnrs = corners(data)
   [print(round(xdist(data,a,b),2),a,b) for a,b in zip(crnrs,crnrs[1:])]
 
-
-files=[
-  "../moot/optimize/binary_config/billing10k.csv",
-  "../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv",
-  "../moot/optimize/binary_config/Scrum100k.csv",
-  "../moot/optimize/binary_config/Scrum10k.csv",
-  "../moot/optimize/binary_config/Scrum1k.csv",
-  "../moot/optimize/config/Apache_AllMeasurements.csv",
-  "../moot/optimize/config/HSMGP_num.csv",
-  "../moot/optimize/config/rs-6d-c3_obj1.csv",
-  "../moot/optimize/config/rs-6d-c3_obj2.csv",
-  "../moot/optimize/config/sol-6d-c2-obj1.csv",
-  "../moot/optimize/config/SQL_AllMeasurements.csv",
-  "../moot/optimize/config/SS-A.csv",
-  "../moot/optimize/config/SS-B.csv",
-  "../moot/optimize/config/SS-C.csv",
-  "../moot/optimize/config/SS-D.csv",
-  "../moot/optimize/config/SS-E.csv",
-  "../moot/optimize/config/SS-F.csv",
-  "../moot/optimize/config/SS-G.csv",
-  "../moot/optimize/config/SS-H.csv",
-  "../moot/optimize/config/SS-I.csv",
-  "../moot/optimize/config/SS-J.csv",
-  "../moot/optimize/config/SS-K.csv",
-  "../moot/optimize/config/SS-L.csv",
-  "../moot/optimize/config/SS-M.csv",
-  "../moot/optimize/config/SS-N.csv",
-  "../moot/optimize/config/SS-O.csv",
-  "../moot/optimize/config/SS-P.csv",
-  "../moot/optimize/config/SS-Q.csv",
-  "../moot/optimize/config/SS-R.csv",
-  "../moot/optimize/config/SS-S.csv",
-  "../moot/optimize/config/SS-T.csv",
-  "../moot/optimize/config/SS-U.csv",
-  "../moot/optimize/config/SS-V.csv",
-  "../moot/optimize/config/SS-W.csv",
-  "../moot/optimize/config/SS-X.csv",
-  "../moot/optimize/config/wc-6d-c1-obj1.csv",
-  "../moot/optimize/config/wc+rs-3d-c4-obj1.csv",
-  "../moot/optimize/config/wc+sol-3d-c4-obj1.csv",
-  "../moot/optimize/config/wc+wc-3d-c4-obj1.csv",
-  "../moot/optimize/config/X264_AllMeasurements.csv",
-  "../moot/optimize/hpo/healthCloseIsses12mths0001-hard.csv",
-  "../moot/optimize/hpo/healthCloseIsses12mths0011-easy.csv",
-  "../moot/optimize/misc/auto93.csv",
-  "../moot/optimize/misc/Wine_quality.csv",
-  "../moot/optimize/process/coc1000.csv",
-  "../moot/optimize/process/nasa93dem.csv",
-  "../moot/optimize/process/pom3a.csv",
-  "../moot/optimize/process/pom3b.csv",
-  "../moot/optimize/process/pom3c.csv",
-  "../moot/optimize/process/pom3d.csv",
-  "../moot/optimize/process/xomo_flight.csv",
-  "../moot/optimize/process/xomo_ground.csv",
-  "../moot/optimize/process/xomo_osp.csv",
-  "../moot/optimize/process/xomo_osp2.csv"
-]
 def eg__buckets():
-  for _ in range(256):
+  P = lambda x: round(100*x,2)
+  C = lambda d: len(corders(d))
+  for _ in range(50):
     the.file = pick(files)
-    data1 = Data(csv(the.file))
-    the.Bins=random.randint(3,10)  
-    the.dims=random.randint(2,8)
-    minPts = 4 if the.dims==2 else 2*the.dims
-    crnrs = corners(data1)
-    ns = sorted(n for _,data2 in buckets(data1,crnrs).items() 
-                if (n := len(data2.rows)) >= minPts)
-    most=the.Bins**the.dims
-    got = len(ns)
-    p = lambda x: round(100*x,2)
-    print(o(bins=the.Bins, dims=the.dims, most=most, 
-            got=got, p=p(got/most)),flush=True)
+    data = Data(csv(the.file))
+    b1   = the.Bins=random.randint(3,10)  
+    d1   = the.dims=random.randint(3,8)
+    has1 = len(buckets(data, corners(data)))
+    b2   = the.Bins=random.randint(b1,10)  
+    d2   = the.dims=random.randint(d1,8)
+    if (d2>d1 or b2>b1):
+      has2 = len(buckets(data, corners(data)))
+      if has1 and has2:
+        print(o(rows=len(data.rows), 
+              bd1=d1**b1,has1=has1, bd2=d2**b2, has2=has2, 
+              delta=P((has2-has1)/has1)))
 
 ### Tree -----------------------------------------------------------------------
-
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
@@ -570,7 +500,6 @@ def show(data, key=lambda z:z.ys.mu):
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    {(lvl-1) * '|  '}{xplain}" + post)
           
 ### Utils ----------------------------------------------------------------------
-
 def cat(v): 
   it = type(v)
   inf = float('inf')
@@ -596,6 +525,69 @@ def shuffle(a):
   return a
 
 ### Start-up ------------------------------------------------------------------
+files=[
+  "../moot/optimize/binary_config/billing10k.csv",
+  "../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv",
+  "../moot/optimize/binary_config/Scrum100k.csv",
+  "../moot/optimize/binary_config/Scrum10k.csv",
+  "../moot/optimize/binary_config/Scrum1k.csv",
+  "../moot/optimize/config/Apache_AllMeasurements.csv",
+  "../moot/optimize/config/HSMGP_num.csv",
+  "../moot/optimize/config/rs-6d-c3_obj1.csv",
+  "../moot/optimize/config/rs-6d-c3_obj2.csv",
+  "../moot/optimize/config/sol-6d-c2-obj1.csv",
+  "../moot/optimize/config/SQL_AllMeasurements.csv",
+  "../moot/optimize/config/SS-A.csv",
+  "../moot/optimize/config/SS-B.csv",
+  "../moot/optimize/config/SS-C.csv",
+  "../moot/optimize/config/SS-D.csv",
+  "../moot/optimize/config/SS-E.csv",
+  "../moot/optimize/config/SS-F.csv",
+  "../moot/optimize/config/SS-G.csv",
+  "../moot/optimize/config/SS-H.csv",
+  "../moot/optimize/config/SS-I.csv",
+  "../moot/optimize/config/SS-J.csv",
+  "../moot/optimize/config/SS-K.csv",
+  "../moot/optimize/config/SS-L.csv",
+  "../moot/optimize/config/SS-M.csv",
+  "../moot/optimize/config/SS-N.csv",
+  "../moot/optimize/config/SS-O.csv",
+  "../moot/optimize/config/SS-P.csv",
+  "../moot/optimize/config/SS-Q.csv",
+  "../moot/optimize/config/SS-R.csv",
+  "../moot/optimize/config/SS-S.csv",
+  "../moot/optimize/config/SS-T.csv",
+  "../moot/optimize/config/SS-U.csv",
+  "../moot/optimize/config/SS-V.csv",
+  "../moot/optimize/config/SS-W.csv",
+  "../moot/optimize/config/SS-X.csv",
+  "../moot/optimize/config/wc-6d-c1-obj1.csv",
+  "../moot/optimize/config/wc+rs-3d-c4-obj1.csv",
+  "../moot/optimize/config/wc+sol-3d-c4-obj1.csv",
+  "../moot/optimize/config/wc+wc-3d-c4-obj1.csv",
+  "../moot/optimize/config/X264_AllMeasurements.csv",
+  "../moot/optimize/hpo/healthCloseIsses12mths0001-hard.csv",
+  "../moot/optimize/hpo/healthCloseIsses12mths0011-easy.csv",
+  "../moot/optimize/misc/auto93.csv",
+  "../moot/optimize/misc/Wine_quality.csv",
+  "../moot/optimize/process/coc1000.csv",
+  "../moot/optimize/process/nasa93dem.csv",
+  "../moot/optimize/process/pom3a.csv",
+  "../moot/optimize/process/pom3b.csv",
+  "../moot/optimize/process/pom3c.csv",
+  "../moot/optimize/process/pom3d.csv",
+  "../moot/optimize/process/xomo_flight.csv",
+  "../moot/optimize/process/xomo_ground.csv",
+  "../moot/optimize/process/xomo_osp.csv",
+  "../moot/optimize/process/xomo_osp2.csv"
+]
 
 def main():
   cli(the.__dict__)
