@@ -23,7 +23,12 @@ help: ## show help.
 		BEGIN {FS = ":.*?##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n\nHelp:\n"} \
     /^[a-zA-Z_%\.\/-]+:.*?##/ {printf("  \033[36m%-15s\033[0m %s\n", $$1, $$2) | "sort" } \
 	' $(MAKEFILE_LIST)
-	
+
+loc: ## REport loc
+	cat bingo.py \
+	| gawk '!/^#/ && !/^\f#/' \
+	| gawk 'BEGIN {RS="";FS="\n"} /def eg_/ {next} {print $$0 "\n"}' |wc
+
 pull: ## update from main
 	git pull
 

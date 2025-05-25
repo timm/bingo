@@ -12,7 +12,24 @@ Afterwards, `-c c` items from the top bain are labeled for evaluation. This code
 is successful if it finds great rows, after just labeling just a few rows; e.g.
 `a+b+c<32` in a space of (say) 1,000+ rows.
 
-## Options
+## Installation
+
+Check out the code and data repositories, side by side:
+
+```bash
+curl -o bingo.py https://raw.githubusercontent.com/timm/bingo/main/bingo.py
+```
+
+<!--- cd dir
+git clone http://github.com/timm/moot
+mkdir bingo
+cd bingo
+wget -O bingo.py https://raw.githubusercontent.com/timm/bingo/refs/heads/main/bingo.py
+python3 bingo.py -h
+```
+--->
+
+## Config
 
 ```
 bingo.py: stochastic landscape analysis for multi-objective reasoning

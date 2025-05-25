@@ -34,7 +34,7 @@ Options, with their (defaults):
    -c c      rows labels while testing the supposed best bin (5)
    -d dims   number of dimensions (4)
    -f file   csv file for data (../moot/optimize/misc/auto93.csv)
-   -G Got    directory to cache downloaded data files (~/tmp/moot)
+   -G Got    directory to cache downloaded data files (tmp/moot)
    -g get    github repo storing example data files (timm/moot)      
    -K Ksee   sample size, when seeking centroids (256)
    -k k      Bayes hack for rare classes  (1)
@@ -52,6 +52,7 @@ picks = random.choices
 BIG = 1E32
 
 ### Command-line  --------------------------------------------------------------
+
 # Reset slots from CLI flags, matching on first letter of slot.
 # e.g. `-f file1` sets `d["file"]` to `file1`. If current value is a bolean then
 # flags reverse old value. e.g. `-v `negates  (e.g.) `d["verbose"]=False`.
@@ -89,6 +90,7 @@ def eg__all():
         fun()
 
 ### Settings  ------------------------------------------------------------------
+
 # Structs with named fields + pretty print.
 class o:
   __init__= lambda i, **d: i.__dict__.update(**d)
@@ -104,6 +106,7 @@ def eg__the() -> None:
   print(the)
 
 ### Create ---------------------------------------------------------------------
+
 # Update `i` with  multiple things. 
 def inits(things, i): [add(i,thing) for thing in things]; return i
 
@@ -151,21 +154,12 @@ def clone(data, rows=[]): # -> Data
   return inits(Data([[col.txt for col in data.cols.all]]), rows)
 
 ### Read --------------------------------------------------------------------
+
+# Iterate over rows in file `s`.
 def csv(s):
-  with open(webdata(s) or s, 'r', newline='', encoding='utf-8') as f:
+  with open(s, 'r', newline='', encoding='utf-8') as f:
     for line in f:
       yield [coerce(s) for s in line.strip().split(',')]
-
-def webdata(fn):
-  if fn.startswith(the.get):
-    cdir = os.path.expanduser(the.Got)
-    os.makedirs(cdir, exist_ok=True)
-    lfn = fn[len(the.get)+1:]
-    lpath = os.path.join(cdir, lfn)
-    if not os.path.exists(lpath):
-      rurl = f"https://github.com/{the.get}/tree/master/{fn}"
-      urllib.request.urlretrieve(rurl, lpath)
-    return lpath
 
 def eg__csv():
   "Print csv data."
@@ -183,6 +177,7 @@ def eg__cols():
   [print(cat(col)) for col in cols]
  
 ### Update --------------------------------------------------------------------
+
 # `sub` is just `add`ing -1.
 def sub(i,v,purge=False): # -> v
   return add(i, v, inc= -1, purge=purge)
@@ -232,6 +227,7 @@ def eg__data():
   assert model.lo == 70 and model.hi == 82
 
 ### Reports -------------------------------------------------------------------
+
 def mids(data): return [mid(col) for col in data.cols.all]
 def divs(data): return [div(col) for col in data.cols.all]
 
@@ -261,6 +257,7 @@ def eg__addSub():
       assert all(math.isclose(a,b,abs_tol=0.01) for a,b in zip(d0, d1))
 
 ### Bayes ----------------------------------------------------------------------
+
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at],prior) 
@@ -289,6 +286,7 @@ def eg__bayes():
   report(rows,head,1)
 
 ### Distance ------------------------------------------------------------------
+
 def norm(i,v):
   return v if (v=="?" or i.it is not Num) else (v - i.lo)/(i.hi - i.lo + 1/BIG)
 
@@ -304,6 +302,7 @@ def dist(col,v,w):
  
   return 1 if v=="?" and w=="?" else (_num if col.it is Num else _sym)(col,v,w)
 
+# Returns the i`p-`th root of sum of the x in a (rarraised to `p`).
 def minkowski(a):
   total, n = 0, 1 / BIG
   for x in a:
@@ -311,12 +310,15 @@ def minkowski(a):
     total += x**the.p
   return (total / n)**(1 / the.p)
 
+# Distance to ideal, measured across y-columns.
 def ydist(data, row):  
   return minkowski(abs(norm(c,row[c.at]) - c.heaven) for c in data.cols.y)
 
+# Distance between two rows, measured across x-columns. 
 def xdist(data, row1, row2):  
   return minkowski(dist(c,row1[c.at], row2[c.at]) for c in data.cols.x)
 
+# K-means plus plus: k points, usually D^2 distance from each other.
 def kpp(data, k=10, rows=None, few=None):
     def D(x, y):
       key = tuple(sorted((id(x), id(y))))
@@ -362,6 +364,7 @@ def eg__kpp():
     print("kpps   ", o(Ksee=k, repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
 
 ### Clustering ----------------------------------------------------------------
+
 def project(data, row, a, b): # -> 0,1,2 .. the.bins-1
   D = lambda row1,row2: xdist(data,row1,row2)
   c = D(a,b)
@@ -402,6 +405,7 @@ def neighbors(c, hi):
   yield from go(0, [])
 
 ### Tree -----------------------------------------------------------------------
+
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
@@ -476,6 +480,7 @@ def show(data, key=lambda z:z.ys.mu):
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    {(lvl-1) * '|  '}{xplain}" + post)
           
 ### Utils ----------------------------------------------------------------------
+
 def cat(v): 
   it = type(v)
   inf = float('inf')
@@ -501,6 +506,7 @@ def shuffle(a):
   return a
 
 ### Start-up ------------------------------------------------------------------
+
 def main():
   cli(the.__dict__)
   for s in sys.argv:
