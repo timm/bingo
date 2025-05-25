@@ -34,8 +34,6 @@ Options, with their (defaults):
    -c c      rows labels while testing the supposed best bin (5)
    -d dims   number of dimensions (4)
    -f file   csv file for data (../moot/optimize/misc/auto93.csv)
-   -G Got    directory to cache downloaded data files (tmp/moot)
-   -g get    github repo storing example data files (timm/moot)      
    -K Ksee   sample size, when seeking centroids (256)
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
@@ -151,7 +149,7 @@ def Data(init=[]): # -> Data
               
 # Mimic the structure of an existing `Data`. Optionally, add some rows.
 def clone(data, rows=[]): # -> Data
-  return inits(Data([[col.txt for col in data.cols.all]]), rows)
+  return inits(rows, Data([[col.txt for col in data.cols.all]]))
 
 ### Read --------------------------------------------------------------------
 
@@ -226,6 +224,13 @@ def eg__data():
   assert 3.69 <div( model) < 3.7
   assert model.lo == 70 and model.hi == 82
 
+def eg__clone(): 
+  "Clone some Data."
+  data1 = Data(csv(the.file))
+  data2 = clone(data1, data1.rows)
+  assert data1.cols.y[1].mu  == data2.cols.y[1].mu
+  assert data1.cols.y[2]._m2 == data2.cols.y[2]._m2
+ 
 ### Reports -------------------------------------------------------------------
 
 def mids(data): return [mid(col) for col in data.cols.all]
@@ -365,30 +370,30 @@ def eg__kpp():
 
 ### Clustering ----------------------------------------------------------------
 
-def project(data, row, a, b): # -> 0,1,2 .. the.bins-1
+def project(data, row, a, b): # -> 0,1,2 .. the.Bins-1
   D = lambda row1,row2: xdist(data,row1,row2)
   c = D(a,b)
   if c==0: return 0
   return (D(row, a)**2 + c**2 - D(row, b)**2) / (2 * c *c)
 
 def bucket(data,row,a,b):
-  return min(int( project(data,row,a,b) * the.bins), the.bins - 1)
+  return min(int( project(data,row,a,b) * the.Bins), the.Bins - 1)
 
 def extrapolate(data,row,a,b):
   ya, yb = ydist(data,a), ydist(data,b)
   return ya + project(data,row,a,b) * (yb - ya)  
 
-def poles(data): # -> List[Row]
-  r0, *some = picks(data.rows, k=the.some + 1)
-  out = [max(some, key=lambda r1: xdist(data.r1, r0))]
+def corners(data): # -> List[Row]
+  r0, *some = picks(data.rows, k=the.Ksee + 1)
+  out = [max(some, key=lambda r1: xdist(data,r1, r0))]
   for _ in range(the.dims):
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
   return out
 
-def lsh(data, corners): # -> Dict[Tuple, List[Row]]
+def buckets(data, crnrs): # -> Dict[Tuple, List[Row]]
   buckets = {}
   for row in data.rows:
-    k = tuple(bucket(row, a, b) for a, b in zip(corners, corners[1:]))
+    k = tuple(bucket(data,row, a, b) for a, b in zip(crnrs, crnrs[1:]))
     buckets[k] = buckets.get(k) or clone(data)
     add(buckets[k], row)
   return buckets
@@ -403,6 +408,91 @@ def neighbors(c, hi):
       for d in [-1, 0, 1]:
         yield from go(i+1, p + [c[i] + d])
   yield from go(0, [])
+
+def eg__corners():
+  data = Data(csv(the.file))
+  crnrs = corners(data)
+  [print(round(xdist(data,a,b),2),a,b) for a,b in zip(crnrs,crnrs[1:])]
+
+
+files=[
+  "../moot/optimize/binary_config/billing10k.csv",
+  "../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv",
+  "../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv",
+  "../moot/optimize/binary_config/Scrum100k.csv",
+  "../moot/optimize/binary_config/Scrum10k.csv",
+  "../moot/optimize/binary_config/Scrum1k.csv",
+  "../moot/optimize/config/Apache_AllMeasurements.csv",
+  "../moot/optimize/config/HSMGP_num.csv",
+  "../moot/optimize/config/rs-6d-c3_obj1.csv",
+  "../moot/optimize/config/rs-6d-c3_obj2.csv",
+  "../moot/optimize/config/sol-6d-c2-obj1.csv",
+  "../moot/optimize/config/SQL_AllMeasurements.csv",
+  "../moot/optimize/config/SS-A.csv",
+  "../moot/optimize/config/SS-B.csv",
+  "../moot/optimize/config/SS-C.csv",
+  "../moot/optimize/config/SS-D.csv",
+  "../moot/optimize/config/SS-E.csv",
+  "../moot/optimize/config/SS-F.csv",
+  "../moot/optimize/config/SS-G.csv",
+  "../moot/optimize/config/SS-H.csv",
+  "../moot/optimize/config/SS-I.csv",
+  "../moot/optimize/config/SS-J.csv",
+  "../moot/optimize/config/SS-K.csv",
+  "../moot/optimize/config/SS-L.csv",
+  "../moot/optimize/config/SS-M.csv",
+  "../moot/optimize/config/SS-N.csv",
+  "../moot/optimize/config/SS-O.csv",
+  "../moot/optimize/config/SS-P.csv",
+  "../moot/optimize/config/SS-Q.csv",
+  "../moot/optimize/config/SS-R.csv",
+  "../moot/optimize/config/SS-S.csv",
+  "../moot/optimize/config/SS-T.csv",
+  "../moot/optimize/config/SS-U.csv",
+  "../moot/optimize/config/SS-V.csv",
+  "../moot/optimize/config/SS-W.csv",
+  "../moot/optimize/config/SS-X.csv",
+  "../moot/optimize/config/wc-6d-c1-obj1.csv",
+  "../moot/optimize/config/wc+rs-3d-c4-obj1.csv",
+  "../moot/optimize/config/wc+sol-3d-c4-obj1.csv",
+  "../moot/optimize/config/wc+wc-3d-c4-obj1.csv",
+  "../moot/optimize/config/X264_AllMeasurements.csv",
+  "../moot/optimize/hpo/healthCloseIsses12mths0001-hard.csv",
+  "../moot/optimize/hpo/healthCloseIsses12mths0011-easy.csv",
+  "../moot/optimize/misc/auto93.csv",
+  "../moot/optimize/misc/Wine_quality.csv",
+  "../moot/optimize/process/coc1000.csv",
+  "../moot/optimize/process/nasa93dem.csv",
+  "../moot/optimize/process/pom3a.csv",
+  "../moot/optimize/process/pom3b.csv",
+  "../moot/optimize/process/pom3c.csv",
+  "../moot/optimize/process/pom3d.csv",
+  "../moot/optimize/process/xomo_flight.csv",
+  "../moot/optimize/process/xomo_ground.csv",
+  "../moot/optimize/process/xomo_osp.csv",
+  "../moot/optimize/process/xomo_osp2.csv"
+]
+def eg__buckets():
+  for _ in range(256):
+    the.file = pick(files)
+    data1 = Data(csv(the.file))
+    the.Bins=random.randint(3,10)  
+    the.dims=random.randint(2,8)
+    minPts = 4 if the.dims==2 else 2*the.dims
+    crnrs = corners(data1)
+    ns = sorted(n for _,data2 in buckets(data1,crnrs).items() 
+                if (n := len(data2.rows)) >= minPts)
+    most=the.Bins**the.dims
+    got = len(ns)
+    p = lambda x: round(100*x,2)
+    print(o(bins=the.Bins, dims=the.dims, most=most, 
+            got=got, p=p(got/most)),flush=True)
 
 ### Tree -----------------------------------------------------------------------
 
