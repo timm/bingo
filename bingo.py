@@ -45,7 +45,7 @@ Options, with their (defaults):
    -z zero   ignore bins with zero items; 0=auto choose (0)
    -h        show help
 """
-import urllib.request, random, math, sys, re, os
+import random, math, sys, re
 
 sys.dont_write_bytecode = True
 pick = random.choice
@@ -277,40 +277,46 @@ def pdf(col,v, prior=0):
   
   return (_num if col.it is Num else _sym)(col,v)
 
- def bayes_act_learn(data):
-    "BAYES: Split rows to best,rest. Label row that's e.g. max best/rest."
-    def _acq(b, r, acq="xploit", p=1):
-      b,r = math.e**b, math.e**r
-      q   = 0 if acq=="xploit" else (1 if acq=="xplor" else 1-p)
-      return (b + r*q) / abs(b*q - r + 1/BIG)
-    def _guess(row):
-      return _acq(like(best,row,n,2), like(rest,row,n,2), the.acq, n/the.b)
+def acquires(data):
+   "BAYES: Split rows to best,rest. Label row that's e.g. max best/rest."
+   def _acquire(b, r, acq="xploit", p=1):
+     b,r = math.e**b, math.e**r
+     q   = 0 if acq=="xploit" else (1 if acq=="xplor" else 1-p)
+     return (b + r*q) / abs(b*q - r + 1/BIG)
+   def _guess(row):
+     return _acquire(like(best,row,n,2), like(rest,row,n,2), the.Acq, n/the.b)
 
-    random.shuffle(data.rows)
-    n         = the.a
-    todo      = data.rows[n:]
-    bestrest  = clone(data, data.rows[:n])
-    done      = ysort(bestrest)
-    cut       = round(n**the.Guess)
-    best,rest = clone(data, done[:cut]), clone(data, done[cut:])
-    while len(todo) > 2 and n < the.b:
-      n      += 1
-      hi, *lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
-      todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
-      add(bestrest, add(best, hi))
-      best.rows = ysort(bestrest)
-      if len(best.rows) >= round(n**the.Guess):
-         add(rest, sub(best,  best.rows.pop(-1)))
-    return o(best=best, rest=rest, test=todo)
+   random.shuffle(data.rows)
+   n         = the.a
+   todo      = data.rows[n:]
+   bestrest  = clone(data, data.rows[:n])
+   done      = ysort(bestrest)
+   cut       = round(n**the.Guess)
+   best,rest = clone(data, done[:cut]), clone(data, done[cut:])
+   while len(todo) > 2 and n < the.b:
+     n      += 1
+     hi, *lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
+     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+     add(bestrest, add(best, hi))
+     best.rows = ysort(bestrest)
+     if len(best.rows) >= round(n**the.Guess):
+        add(rest, sub(best,  best.rows.pop(-1)))
+   return o(best=best, rest=rest, test=todo)
 
 def eg__bayes():
   data = Data(csv(the.file))
-  L = lambda r: round(like(data,r),2)
-  F = lambda a: print(' '.join([f"{x:>8}" for x in a]))
+  L = lambda r: like(data,r)
   assert all(-20 < L(row) < -9 for row in data.rows)
-  rows = [[L(row)] + row for row in sorted(data.rows, key=L)[::30]]
-  head = ["Like"] + [col.txt for col in data.cols.all]
-  report(rows,head,1)
+  report([[L(r)] + r for r in sorted(data.rows, key=L)[::30]],
+         ["Like"] + [col.txt for col in data.cols.all])
+
+def eg__acquires():
+  f    = re.sub("^.*/","",the.file)
+  data = Data(csv(the.file))
+  base = Num(ydist(data,r) for r in data.rows)
+  num  = Num(ydist(data, acquires(data).best.rows[0]) for _ in range(20))
+  win  = (1 - (num.mu - base.lo) / (base.mu - base.lo))
+  print(o(win=win, mu=num.mu, b4=o(mu=base.mu, lo=base.lo), file=f), flush=True)
 
 ### Distance ------------------------------------------------------------------
 def norm(i,v):
@@ -370,12 +376,10 @@ def kpp(data, k=10, rows=None, few=None):
 
 def eg__ydist():
   data = Data(csv(the.file))
-  L = lambda r: round(like(data,r),2)
-  Y = lambda r: round(ydist(data,r),2)
+  Y    = lambda r:ydist(data,r)
   assert all(0 <= Y(row) <= 1 for row in data.rows)
-  rows = [[Y(row),L(row)] + row for row in sorted(data.rows, key=Y)[::30]]
-  head = ["Y","Like"] + [col.txt for col in data.cols.all]
-  report(rows,head,1)
+  report([[Y(r),like(data,r)] + r for r in sorted(data.rows, key=Y)[::30]],
+         ["Y","Like"] + [col.txt for col in data.cols.all])
 
 def eg__kpp():
   "Diversity sample: random vs kpp. Try a few times  with -r $RANDOM --kpp."
@@ -388,9 +392,11 @@ def eg__kpp():
   for k in [10,20,30,40,80,160]:
     print("")
     anys = Num(best(picks(data.rows,k=k))    for _ in range(repeats))
-    print("random ", o(Ksee=k, repeats=anys.n, lo=anys.lo, mu=anys.mu, hi=anys.hi, D=0.35*div(anys)))
+    print("random ", o(Ksee=k, repeats=anys.n, 
+                      lo=anys.lo, mu=anys.mu, hi=anys.hi, D=0.35*div(anys)))
     kpps = Num(best(kpp(data,       k=k)[0]) for _ in range(repeats))
-    print("kpps   ", o(Ksee=k, repeats=kpps.n, lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
+    print("kpps   ", o(Ksee=k, repeats=kpps.n, 
+                       lo=kpps.lo, mu=kpps.mu, hi=kpps.hi, D=0.35*div(kpps)))
 
 ### Clustering ----------------------------------------------------------------
 def project(data, row, a, b): # -> 0,1,2 .. the.Bins-1
@@ -415,13 +421,13 @@ def corners(data): # -> List[Row]
 
 # Why and How You Should (Still) Use DBSCA
 def buckets(data, crnrs): # -> Dict[Tuple, List[Row]]
-  buckets = {}
+  out = {}
   for row in data.rows:
     k = tuple(bucket(data,row, a, b) for a, b in zip(crnrs, crnrs[1:]))
-    buckets[k] = buckets.get(k) or clone(data)
-    add(buckets[k], row)
+    out[k] = out.get(k) or clone(data)
+    add(out[k], row)
   minPts = max(4, 2*the.Dims)
-  return {k:data for k,data in buckets.items() if len(data.rows)>=minPts}
+  return {k:data for k,data in out.items() if len(data.rows)>=minPts}
 
 def neighbors(c, hi):
   def go(i, p):
@@ -439,10 +445,9 @@ def eg__corners():
   crnrs = corners(data)
   [print(round(xdist(data,a,b),2),a,b) for a,b in zip(crnrs,crnrs[1:])]
 
-def eg__buckets():
-  "Check if dimensionality or bin size changes number of buckets."
+def eg__bingrow():
+  "Check if increasing dimensionality or bin size changes number of buckets."
   P = lambda x: round(100*x,2)
-  C = lambda d: len(corders(d))
   for _ in range(50):
     the.file = pick(files)
     data = Data(csv(the.file))
@@ -559,18 +564,18 @@ def shuffle(a):
 
 ### Start-up ------------------------------------------------------------------
 files=[
-  "../moot/optimize/binary_config/billing10k.csv",
-  "../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv",
-  "../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv",
-  "../moot/optimize/binary_config/Scrum100k.csv",
-  "../moot/optimize/binary_config/Scrum10k.csv",
-  "../moot/optimize/binary_config/Scrum1k.csv",
+  # "../moot/optimize/binary_config/billing10k.csv",
+  # "../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv",
+  # "../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv",
+  # "../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv",
+  # "../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv",
+  # "../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv",
+  # "../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv",
+  # "../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv",
+  # "../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv",
+  # "../moot/optimize/binary_config/Scrum100k.csv",
+  # "../moot/optimize/binary_config/Scrum10k.csv",
+  # "../moot/optimize/binary_config/Scrum1k.csv",
   "../moot/optimize/config/Apache_AllMeasurements.csv",
   "../moot/optimize/config/HSMGP_num.csv",
   "../moot/optimize/config/rs-6d-c3_obj1.csv",

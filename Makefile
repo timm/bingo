@@ -40,11 +40,12 @@ push: ## commit to main
 sh: ## run my shell
 	here="$(Top)" bash --init-file  $(Top)/etc/init.sh -i
 
+P?=*.py
 lint: ## lint all python in this directory
 	export PYTHONPATH="..:$$PYTHONPATH"; \
 	pylint --disable=W0311,C0303,C0116,C0321,C0103 \
 		     --disable=C0410,C0115,C3001,R0903,E1101,E1120,R1726 \
-		     --disable=W0108,W0106,W0718,W0201,W0102,W0212,R1710  *.py
+		     --disable=W0108,W0106,W0718,W0201,W0102,W0212,R1710,C0123  $P
 
 docs/%.html: %.py $(Top)/Makefile $(Top)/etc/head.html $(Top)/etc/my.css ## make doco: .py ==> .html
 	cat $< | gawk '{gsub(/-------[-]*/,"\n#  \n#   \n\n"); print}' > $(Top)/docs/$<
@@ -96,6 +97,8 @@ rq1Report:
 				       print(2^b, n[b], R(b,has1), R(b,has2), R(b,sum)) } \
 	      function R(b,a) { return int(a[b]/n[b]) }'
 
+acquires: ../moot/optimize/[bchmp]*/*.csv
+	$(foreach f,$^, (python3 bingo.py -f $f --acquires &); )
 
 # push:
 # 	git add -A ../LICENSE.md *.md # Or more specific files
