@@ -76,6 +76,27 @@ docs/%.pdf: %.py Makefile ## make doco: .py ==> .pdf
 		-o - $< | ps2pdf - $@
 	open $@
 
+rq1:
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+	python3 -B bingo.py -r $$RANDOM --buckets &
+
+rq1Report:
+	cat ~/tmp/rq1 \
+		| gawk '{gsub(/[\{\},]/,"")} \
+		         {b=int(log($$2)/log(2)); \
+						  n[b]++; sum[b]+= $$NF ;has1[b] += $$8; has2[b] += $$12 } \
+				END {for (b in n) \
+				       print(2^b, n[b], R(b,has1), R(b,has2), R(b,sum)) } \
+	      function R(b,a) { return int(a[b]/n[b]) }'
+
 
 # push:
 # 	git add -A ../LICENSE.md *.md # Or more specific files

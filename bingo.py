@@ -421,9 +421,9 @@ def eg__buckets():
     if (d2>d1 or b2>b1):
       has2 = len(buckets(data, corners(data)))
       if has1 and has2:
-        print(o(rows=len(data.rows), 
+        print(o(rows=len(data.rows), seed=the.rseed,
               bd1=d1**b1,has1=has1, bd2=d2**b2, has2=has2, 
-              delta=P((has2-has1)/has1)))
+              delta=P((has2-has1)/has1)), flush=True)
 
 ### Tree -----------------------------------------------------------------------
 ops = {'<=' : lambda x,y: x <= y,
@@ -573,8 +573,6 @@ files=[
   "../moot/optimize/config/wc+sol-3d-c4-obj1.csv",
   "../moot/optimize/config/wc+wc-3d-c4-obj1.csv",
   "../moot/optimize/config/X264_AllMeasurements.csv",
-  "../moot/optimize/hpo/healthCloseIsses12mths0001-hard.csv",
-  "../moot/optimize/hpo/healthCloseIsses12mths0011-easy.csv",
   "../moot/optimize/misc/auto93.csv",
   "../moot/optimize/misc/Wine_quality.csv",
   "../moot/optimize/process/coc1000.csv",
