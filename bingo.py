@@ -28,13 +28,16 @@ bingo.py: stochastic landscape analysis for multi objective reasoning
 
 Options, with their (defaults):
   
+   -A Acq    acqustion policy = xplor or xploit or adapt (xploit)
    -B Bins   number of bins (10)
    -a a      rows labelled at random during cold start (4)
    -b b      rows labelled while reflecting on labels seen so far (30)
    -c c      rows labels while testing the supposed best bin (5)
-   -d dims   number of dimensions (4)
+   -D Dims   number of dimensions (4)
+   -F Few    in active learning, search Few at a time (256)
+   -G Guess  in active learning, bist is rows**Guess (0.5)
    -f file   csv file for data (../moot/optimize/misc/auto93.csv)
-   -K Ksee   sample size, when seeking centroids (256)
+   -K Ksee   sample size, when seeking centroids (100)
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
    -p p      minkowski coefficient  (2)
@@ -274,6 +277,32 @@ def pdf(col,v, prior=0):
   
   return (_num if col.it is Num else _sym)(col,v)
 
+ def bayes_act_learn(data):
+    "BAYES: Split rows to best,rest. Label row that's e.g. max best/rest."
+    def _acq(b, r, acq="xploit", p=1):
+      b,r = math.e**b, math.e**r
+      q   = 0 if acq=="xploit" else (1 if acq=="xplor" else 1-p)
+      return (b + r*q) / abs(b*q - r + 1/BIG)
+    def _guess(row):
+      return _acq(like(best,row,n,2), like(rest,row,n,2), the.acq, n/the.b)
+
+    random.shuffle(data.rows)
+    n         = the.a
+    todo      = data.rows[n:]
+    bestrest  = clone(data, data.rows[:n])
+    done      = ysort(bestrest)
+    cut       = round(n**the.Guess)
+    best,rest = clone(data, done[:cut]), clone(data, done[cut:])
+    while len(todo) > 2 and n < the.b:
+      n      += 1
+      hi, *lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
+      todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
+      add(bestrest, add(best, hi))
+      best.rows = ysort(bestrest)
+      if len(best.rows) >= round(n**the.Guess):
+         add(rest, sub(best,  best.rows.pop(-1)))
+    return o(best=best, rest=rest, test=todo)
+
 def eg__bayes():
   data = Data(csv(the.file))
   L = lambda r: round(like(data,r),2)
@@ -310,6 +339,9 @@ def minkowski(a):
 # Distance to ideal, measured across y-columns.
 def ydist(data, row):  
   return minkowski(abs(norm(c,row[c.at]) - c.heaven) for c in data.cols.y)
+
+def ysort(data,rows=[]):
+   return sorted(rows or data.rows, key=lambda row: ydist(data,row))
 
 # Distance between two rows, measured across x-columns. 
 def xdist(data, row1, row2):  
@@ -377,7 +409,7 @@ def extrapolate(data,row,a,b):
 def corners(data): # -> List[Row]
   r0, *some = picks(data.rows, k=the.Ksee + 1)
   out = [max(some, key=lambda r1: xdist(data,r1, r0))]
-  for _ in range(the.dims):
+  for _ in range(the.Dims):
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
   return out
 
@@ -388,7 +420,7 @@ def buckets(data, crnrs): # -> Dict[Tuple, List[Row]]
     k = tuple(bucket(data,row, a, b) for a, b in zip(crnrs, crnrs[1:]))
     buckets[k] = buckets.get(k) or clone(data)
     add(buckets[k], row)
-  minPts = max(4, 2*the.dims)
+  minPts = max(4, 2*the.Dims)
   return {k:data for k,data in buckets.items() if len(data.rows)>=minPts}
 
 def neighbors(c, hi):
@@ -408,16 +440,17 @@ def eg__corners():
   [print(round(xdist(data,a,b),2),a,b) for a,b in zip(crnrs,crnrs[1:])]
 
 def eg__buckets():
+  "Check if dimensionality or bin size changes number of buckets."
   P = lambda x: round(100*x,2)
   C = lambda d: len(corders(d))
   for _ in range(50):
     the.file = pick(files)
     data = Data(csv(the.file))
     b1   = the.Bins=random.randint(3,10)  
-    d1   = the.dims=random.randint(3,8)
+    d1   = the.Dims=random.randint(3,8)
     has1 = len(buckets(data, corners(data)))
     b2   = the.Bins=random.randint(b1,10)  
-    d2   = the.dims=random.randint(d1,8)
+    d2   = the.Dims=random.randint(d1,8)
     if (d2>d1 or b2>b1):
       has2 = len(buckets(data, corners(data)))
       if has1 and has2:

@@ -21,7 +21,7 @@
 src="https://img.shields.io/badge/GitHub-src-yellow?logo=github&style=flat-square"
 ></a> <img alt="language" 
 src="https://img.shields.io/badge/language-python-blue.svg?style=flat-square">
-<a href="https://github.com/timm/bingo/blob/main/LICENSE.md"
+<a href="https://github.com/timm/bingo/blob/main/LICENSE"
 ><img alt="purpose" 
 src="https://img.shields.io/badge/license-MIT-brightgreen?logo=open-source-initiative&logoColor=white&style=flat-square"
     ></a><br>
@@ -75,8 +75,6 @@ Options, with their (defaults):
    -c c      rows labels while testing the supposed best bin (5)
    -d dims   number of dimensions (4)
    -f file   csv file for data (../moot/optimize/misc/auto93.csv)
-   -G Got    directory to cache downloaded data files (~/tmp/moot)
-   -g get    github repo storing example data files (timm/moot)      
    -K Ksee   sample size, when seeking centroids (256)
    -k k      Bayes hack for rare classes  (1)
    -m m      Bayes hack for rare frequencies (2)
@@ -345,7 +343,7 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">clone</span>(<span class="hljs-params">data, rows=[]</span>): <span class="hljs-comment"># -&gt; Data</span>
-  <span class="hljs-keyword">return</span> inits(Data([[col.txt <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]), rows)</pre></div></div>
+  <span class="hljs-keyword">return</span> inits(rows, Data([[col.txt <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.<span class="hljs-built_in">all</span>]]))</pre></div></div>
             
         </li>
         
@@ -374,33 +372,9 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">csv</span>(<span class="hljs-params">s</span>):
-  <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(webdata(s) <span class="hljs-keyword">or</span> s, <span class="hljs-string">&#x27;r&#x27;</span>, newline=<span class="hljs-string">&#x27;&#x27;</span>, encoding=<span class="hljs-string">&#x27;utf-8&#x27;</span>) <span class="hljs-keyword">as</span> f:
+  <span class="hljs-keyword">with</span> <span class="hljs-built_in">open</span>(s, <span class="hljs-string">&#x27;r&#x27;</span>, newline=<span class="hljs-string">&#x27;&#x27;</span>, encoding=<span class="hljs-string">&#x27;utf-8&#x27;</span>) <span class="hljs-keyword">as</span> f:
     <span class="hljs-keyword">for</span> line <span class="hljs-keyword">in</span> f:
-      <span class="hljs-keyword">yield</span> [coerce(s) <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> line.strip().split(<span class="hljs-string">&#x27;,&#x27;</span>)]</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-17">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-17">&#x00a7;</a>
-              </div>
-              <p>Get data from repo <code>the.get</code>. Keep a local cache of gotten files at <code>the.Got</code></p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">webdata</span>(<span class="hljs-params">fn</span>):
-  <span class="hljs-keyword">if</span> fn.startswith(the.get):
-    cdir = os.path.expanduser(the.Got)
-    os.makedirs(cdir, exist_ok=<span class="hljs-literal">True</span>)
-    lfn = fn[<span class="hljs-built_in">len</span>(the.get)+<span class="hljs-number">1</span>:]
-    lpath = os.path.join(cdir, lfn)
-    <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> os.path.exists(lpath):
-      rurl = <span class="hljs-string">f&quot;https://github.com/<span class="hljs-subst">{the.get}</span>/tree/master/<span class="hljs-subst">{fn}</span>&quot;</span>
-      urllib.request.urlretrieve(rurl, lpath)
-    <span class="hljs-keyword">return</span> lpath
+      <span class="hljs-keyword">yield</span> [coerce(s) <span class="hljs-keyword">for</span> s <span class="hljs-keyword">in</span> line.strip().split(<span class="hljs-string">&#x27;,&#x27;</span>)]
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__csv</span>():
   <span class="hljs-string">&quot;Print csv data.&quot;</span>
@@ -420,11 +394,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-18">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-18">&#x00a7;</a>
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <h2 id="update">Update</h2>
 
@@ -433,11 +407,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-19">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-19">&#x00a7;</a>
+                <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
               <p><code>sub</code> is just <code>add</code>ing -1.</p>
 
@@ -449,11 +423,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-20">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-20">&#x00a7;</a>
+                <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
               <p>If <code>v</code> is unknown, then ignore. Else, update.</p>
 
@@ -500,16 +474,23 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
   <span class="hljs-string">&quot;Read data from disk.&quot;</span>
   model = Data(csv(the.file)).cols.x[<span class="hljs-number">2</span>]
   <span class="hljs-keyword">assert</span> <span class="hljs-number">3.69</span> &lt;div( model) &lt; <span class="hljs-number">3.7</span>
-  <span class="hljs-keyword">assert</span> model.lo == <span class="hljs-number">70</span> <span class="hljs-keyword">and</span> model.hi == <span class="hljs-number">82</span></pre></div></div>
+  <span class="hljs-keyword">assert</span> model.lo == <span class="hljs-number">70</span> <span class="hljs-keyword">and</span> model.hi == <span class="hljs-number">82</span>
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__clone</span>(): 
+  <span class="hljs-string">&quot;Clone some Data.&quot;</span>
+  data1 = Data(csv(the.file))
+  data2 = clone(data1, data1.rows)
+  <span class="hljs-keyword">assert</span> data1.cols.y[<span class="hljs-number">1</span>].mu  == data2.cols.y[<span class="hljs-number">1</span>].mu
+  <span class="hljs-keyword">assert</span> data1.cols.y[<span class="hljs-number">2</span>]._m2 == data2.cols.y[<span class="hljs-number">2</span>]._m2</pre></div></div>
             
         </li>
         
         
-        <li id="section-21">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-21">&#x00a7;</a>
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <h2 id="reports">Reports</h2>
 
@@ -548,11 +529,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-22">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-22">&#x00a7;</a>
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               <h2 id="bayes">Bayes</h2>
 
@@ -590,11 +571,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-23">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-23">&#x00a7;</a>
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <h2 id="distance">Distance</h2>
 
@@ -620,11 +601,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-24">
+        <li id="section-23">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-24">&#x00a7;</a>
+                <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
               <p>Returns the i<code>p-</code>th root of sum of the x in a (rarraised to <code>p</code>).</p>
 
@@ -640,11 +621,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-25">
+        <li id="section-24">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-25">&#x00a7;</a>
+                <a class="ss" href="#section-24">&#x00a7;</a>
               </div>
               <p>Distance to ideal, measured across y-columns.</p>
 
@@ -656,11 +637,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-26">
+        <li id="section-25">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-26">&#x00a7;</a>
+                <a class="ss" href="#section-25">&#x00a7;</a>
               </div>
               <p>Distance between two rows, measured across x-columns. </p>
 
@@ -672,11 +653,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-27">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-27">&#x00a7;</a>
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <p>K-means plus plus: k points, usually D^2 distance from each other.</p>
 
@@ -729,11 +710,11 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
         </li>
         
         
-        <li id="section-28">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-28">&#x00a7;</a>
+                <a class="ss" href="#section-27">&#x00a7;</a>
               </div>
               <h2 id="clustering">Clustering</h2>
 
@@ -741,33 +722,47 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
             
             <div class="content"><div class='highlight'><pre>
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">project</span>(<span class="hljs-params">data, row, a, b</span>): <span class="hljs-comment"># -&gt; 0,1,2 .. the.bins-1</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">project</span>(<span class="hljs-params">data, row, a, b</span>): <span class="hljs-comment"># -&gt; 0,1,2 .. the.Bins-1</span>
   D = <span class="hljs-keyword">lambda</span> row1,row2: xdist(data,row1,row2)
   c = D(a,b)
   <span class="hljs-keyword">if</span> c==<span class="hljs-number">0</span>: <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>
   <span class="hljs-keyword">return</span> (D(row, a)**<span class="hljs-number">2</span> + c**<span class="hljs-number">2</span> - D(row, b)**<span class="hljs-number">2</span>) / (<span class="hljs-number">2</span> * c *c)
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">bucket</span>(<span class="hljs-params">data,row,a,b</span>):
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">min</span>(<span class="hljs-built_in">int</span>( project(data,row,a,b) * the.bins), the.bins - <span class="hljs-number">1</span>)
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">min</span>(<span class="hljs-built_in">int</span>( project(data,row,a,b) * the.Bins), the.Bins - <span class="hljs-number">1</span>)
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">extrapolate</span>(<span class="hljs-params">data,row,a,b</span>):
   ya, yb = ydist(data,a), ydist(data,b)
   <span class="hljs-keyword">return</span> ya + project(data,row,a,b) * (yb - ya)  
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">poles</span>(<span class="hljs-params">data</span>): <span class="hljs-comment"># -&gt; List[Row]</span>
-  r0, *some = picks(data.rows, k=the.some + <span class="hljs-number">1</span>)
-  out = [<span class="hljs-built_in">max</span>(some, key=<span class="hljs-keyword">lambda</span> r1: xdist(data.r1, r0))]
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">corners</span>(<span class="hljs-params">data</span>): <span class="hljs-comment"># -&gt; List[Row]</span>
+  r0, *some = picks(data.rows, k=the.Ksee + <span class="hljs-number">1</span>)
+  out = [<span class="hljs-built_in">max</span>(some, key=<span class="hljs-keyword">lambda</span> r1: xdist(data,r1, r0))]
   <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(the.dims):
     out += [<span class="hljs-built_in">max</span>(some, key=<span class="hljs-keyword">lambda</span> r2: <span class="hljs-built_in">sum</span>(xdist(data,r1,r2) <span class="hljs-keyword">for</span> r1 <span class="hljs-keyword">in</span> out))]
-  <span class="hljs-keyword">return</span> out
+  <span class="hljs-keyword">return</span> out</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-28">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-28">&#x00a7;</a>
+              </div>
+              <p>Why and How You Should (Still) Use DBSCA</p>
 
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">lsh</span>(<span class="hljs-params">data, corners</span>): <span class="hljs-comment"># -&gt; Dict[Tuple, List[Row]]</span>
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">buckets</span>(<span class="hljs-params">data, crnrs</span>): <span class="hljs-comment"># -&gt; Dict[Tuple, List[Row]]</span>
   buckets = {}
   <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> data.rows:
-    k = <span class="hljs-built_in">tuple</span>(bucket(row, a, b) <span class="hljs-keyword">for</span> a, b <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(corners, corners[<span class="hljs-number">1</span>:]))
+    k = <span class="hljs-built_in">tuple</span>(bucket(data,row, a, b) <span class="hljs-keyword">for</span> a, b <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(crnrs, crnrs[<span class="hljs-number">1</span>:]))
     buckets[k] = buckets.get(k) <span class="hljs-keyword">or</span> clone(data)
     add(buckets[k], row)
-  <span class="hljs-keyword">return</span> buckets
+  minPts = <span class="hljs-built_in">max</span>(<span class="hljs-number">4</span>, <span class="hljs-number">2</span>*the.dims)
+  <span class="hljs-keyword">return</span> {k:data <span class="hljs-keyword">for</span> k,data <span class="hljs-keyword">in</span> buckets.items() <span class="hljs-keyword">if</span> <span class="hljs-built_in">len</span>(data.rows)&gt;=minPts}
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">neighbors</span>(<span class="hljs-params">c, hi</span>):
   <span class="hljs-keyword">def</span> <span class="hljs-title function_">go</span>(<span class="hljs-params">i, p</span>):
@@ -778,7 +773,30 @@ flags reverse old value. e.g. <code>-v </code>negates  (e.g.) <code>d[&quot;verb
     <span class="hljs-keyword">else</span>:
       <span class="hljs-keyword">for</span> d <span class="hljs-keyword">in</span> [-<span class="hljs-number">1</span>, <span class="hljs-number">0</span>, <span class="hljs-number">1</span>]:
         <span class="hljs-keyword">yield</span> <span class="hljs-keyword">from</span> go(i+<span class="hljs-number">1</span>, p + [c[i] + d])
-  <span class="hljs-keyword">yield</span> <span class="hljs-keyword">from</span> go(<span class="hljs-number">0</span>, [])</pre></div></div>
+  <span class="hljs-keyword">yield</span> <span class="hljs-keyword">from</span> go(<span class="hljs-number">0</span>, [])
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__corners</span>():
+  data = Data(csv(the.file))
+  crnrs = corners(data)
+  [<span class="hljs-built_in">print</span>(<span class="hljs-built_in">round</span>(xdist(data,a,b),<span class="hljs-number">2</span>),a,b) <span class="hljs-keyword">for</span> a,b <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(crnrs,crnrs[<span class="hljs-number">1</span>:])]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__buckets</span>():
+  P = <span class="hljs-keyword">lambda</span> x: <span class="hljs-built_in">round</span>(<span class="hljs-number">100</span>*x,<span class="hljs-number">2</span>)
+  C = <span class="hljs-keyword">lambda</span> d: <span class="hljs-built_in">len</span>(corders(d))
+  <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">50</span>):
+    the.file = pick(files)
+    data = Data(csv(the.file))
+    b1   = the.Bins=random.randint(<span class="hljs-number">3</span>,<span class="hljs-number">10</span>)  
+    d1   = the.dims=random.randint(<span class="hljs-number">3</span>,<span class="hljs-number">8</span>)
+    has1 = <span class="hljs-built_in">len</span>(buckets(data, corners(data)))
+    b2   = the.Bins=random.randint(b1,<span class="hljs-number">10</span>)  
+    d2   = the.dims=random.randint(d1,<span class="hljs-number">8</span>)
+    <span class="hljs-keyword">if</span> (d2&gt;d1 <span class="hljs-keyword">or</span> b2&gt;b1):
+      has2 = <span class="hljs-built_in">len</span>(buckets(data, corners(data)))
+      <span class="hljs-keyword">if</span> has1 <span class="hljs-keyword">and</span> has2:
+        <span class="hljs-built_in">print</span>(o(rows=<span class="hljs-built_in">len</span>(data.rows), seed=the.rseed,
+              bd1=d1**b1,has1=has1, bd2=d2**b2, has2=has2, 
+              delta=P((has2-has1)/has1)), flush=<span class="hljs-literal">True</span>)</pre></div></div>
             
         </li>
         
@@ -921,6 +939,68 @@ ops = {<span class="hljs-string">&#x27;&lt;=&#x27;</span> : <span class="hljs-ke
             </div>
             
             <div class="content"><div class='highlight'><pre>
+
+files=[
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/billing10k.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FFM-1000-200-0.50-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FFM-125-25-0.50-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FFM-250-50-0.50-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FFM-500-100-0.50-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FM-500-100-0.25-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FM-500-100-0.50-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FM-500-100-0.75-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/FM-500-100-1.00-SAT-1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/Scrum100k.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/Scrum10k.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/binary_config/Scrum1k.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/Apache_AllMeasurements.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/HSMGP_num.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/rs-6d-c3_obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/rs-6d-c3_obj2.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/sol-6d-c2-obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SQL_AllMeasurements.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-A.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-B.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-C.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-D.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-E.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-F.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-G.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-H.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-I.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-J.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-K.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-L.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-M.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-N.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-O.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-P.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-Q.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-R.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-S.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-T.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-U.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-V.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-W.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/SS-X.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/wc-6d-c1-obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/wc+rs-3d-c4-obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/wc+sol-3d-c4-obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/wc+wc-3d-c4-obj1.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/config/X264_AllMeasurements.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/misc/auto93.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/misc/Wine_quality.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/coc1000.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/nasa93dem.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/pom3a.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/pom3b.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/pom3c.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/pom3d.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/xomo_flight.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/xomo_ground.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/xomo_osp.csv&quot;</span>,
+  <span class="hljs-string">&quot;../moot/optimize/process/xomo_osp2.csv&quot;</span>
+]
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">main</span>():
   cli(the.__dict__)
