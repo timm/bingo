@@ -78,27 +78,7 @@ def eg_h():
   print(__doc__,"\nExamples:")
   for s,fun in globals().items():
     if s.startswith("eg__"):
-      print(f"  {re.sub('eg__','--',s):>6}     {fun.__doc__}")
-
-def eg__all():
-  "run all examples"
-  for s,fun in globals().items():
-    if s.startswith("eg__"):
-      if s != "eg__all":
-        print(f"\n# {s} {"-"*40}\n# {fun.__doc__}\n")
-        random.seed(the.rseed)
-        fun()
-
-### Settings  ------------------------------------------------------------------
-# Structs with named fields + pretty print.
-class o:
-  __init__= lambda i, **d: i.__dict__.update(**d)
-  __repr__= lambda i: \
-               (f.__name__ if (f:=i.__dict__.get("it")) else "")+cat(i.__dict__)
-
-# Parse the `__doc__` string to generate `the` config variable.
-the= o(**{m[1]: coerce(m[2])
-          for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)}) 
+      print(f"  {re         for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)}) 
 
 def eg__the() -> None:
   "Print the configuration."
@@ -496,7 +476,12 @@ def cuts(col,rows,Y,Klass):
     if out: 
       return o(div=xpect, hows=out)
 
-  return (_sym if col.it is Sym else _num)(col)
+  return (_sym if col.it is Sym else _num)ef eg_s(n): 
+  ":seed    set random number seed"
+  the.seed=n
+  random.seed(n)
+
+(col)
 
 def tree(data, Klass=Num, Y=None, how=None):
   Y         = Y or (lambda row: ydist(data,row))
