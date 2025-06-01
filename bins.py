@@ -15,17 +15,41 @@ Options, with (defaults):
 import traceback,random,math,sys,re
 sys.dont_write_bytecode = True
 
+### Utils ----------------------------------------------------------------------
+big = 1E32
 pick = random.choice
 picks = random.choices
-big = 1E32
 
-class o:
-  __init__= lambda i, **d: i.__dict__.update(**d)
-  __repr__= lambda i: cat(i.__dict__)
-
-#-------------------------------------------------------------------------------
 def adds(i, src): [add(i,x) for x in src]; return i
 
+def atom(x):
+  for what in (int, float):
+    try: return what(x)
+    except Exception: pass
+  x = x.strip()
+  y = x.lower()
+  return (y == "true") if y in ("true", "false") else x
+
+def csv(file):
+  with open(file, 'r', newline='', encoding='utf-8') as f:
+    for line in f:
+      if line:
+        yield [atom(s) for s in line.strip().split(',')] 
+
+def cat(v): 
+  it  = type(v)
+  inf = float('inf')
+  if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
+  if it is float: return str(int(v)) if -inf<v<inf and v==int(v) else f"{v:.3g}"
+  if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
+  if it in [type(abs), type(cat)]: return v.__name__ + '()'
+  return str(v)
+
+class o:
+  __init__ = lambda i, **d: i.__dict__.update(**d)
+  __repr__ = lambda i: cat(i.__dict__)
+
+### Create ---------------------------------------------------------------------
 def Num(inits=[],at=0, txt=" "):
   return adds(o(it=Num, at=at, txt=txt, n=0, m2=0,mu=0, hi= -big, lo= big, 
                 goal= 0 if txt[-1] == "-" else 1), inits)
@@ -33,7 +57,7 @@ def Num(inits=[],at=0, txt=" "):
 def Sym(inits=[], at=0, txt=" "):
   return adds(o(it=Sym, at=at, txt=txt, n=0, has={}), inits)
 
-def Cols(names):
+def Cols(names): # List[str] -> Dict[str, List[ Sym | Num ]]
   all,x,y = [],[],[]
   for c,s in enumerate(names):
     all += [(Num if s[0].isupper() else Sym)(at=c, txt=s)]
@@ -45,42 +69,53 @@ def Data(inits):
   inits=iter(inits)
   return adds( o(it=Data, n=0, _rows=[], cols=Cols(next(inits))), inits)
 
-def clone(data, rows=[]): 
-  return adds(data(), [data.names] + rows)
+def clone(data, rows=[]): return adds(data(), [data.names] + rows)
 
-def add(i, v): 
-  def _data(data,row):
-    data._rows += [row]
-    [add(col, row[col.at]) for col in data.cols.all] 
-  
-  def _sym(sym,x): 
-    now = sym.has[x] = 1 + sym.has.get(x,0)
+### Update ---------------------------------------------------------------------
+def add(i,v, inc=1, purge=False): # -> v
+  def _sym(sym,s): sym.has[s] = inc + sym.has.get(s,0)
 
-  def _num(num,n):
-    num.lo  = min(n, num.lo)
-    num.hi  = max(n, num.hi)
-    d       = n - num.mu
-    num.mu += (d / num.n)
-    num.m2 += (d * (n - num.mu))
+  def _data(data,row): 
+    if inc < 0:  
+      if purge: data._rows.remove(v) 
+      [sub(col, row[col.at], inc) for col in data.cols.all]  
+    else: 
+      data._rows += [[add(col, row[col.at],inc) for col in data.cols.all]]
 
-  if v != "?":
-    i.n = i.n + 1
+  def _num(num,n): 
+    num.lo = min(n, num.lo)
+    num.hi = max(n, num.hi)
+    if inc < 0 and num.n < 2: 
+      num.m2 = num.mu = num.n = 0
+    else:
+      d       = n - num.mu
+      num.mu += inc * (d / num.n)
+      num.m2 += inc * (d * (n - num.mu))
+
+  if v != "?": 
+    i.n += inc
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
-  
-#-------------------------------------------------------------------------------
+
+def sub(i,v,purge=False): return add(i, v, inc= -1, purge=purge)
+
+### Query ----------------------------------------------------------------------
 def mid(i):
-  if i.it is Data: return [mid(col) for col in i.cols.all]
-  return i.mu if i.it is Num else max(i.has, key=i.has.get)
+  _mode = lambda: max(i.has,key=i.has.get)
+  return i.mu    if i.it is Num else (
+         _mode() if i.it is Sym else (
+         [mid(col) for col in self.cols.all]))
 
 def spread(i):
-  if    i.it is Data: return [spread(col) for col in self.cols.all]
-  elif  i.it is Num:  return 0 if i.n <=2 else (i.m2/(i.n - 1)) ** .5
-  else: return -sum(p*math.log(p,2) for n in i.has.values() if (p:=n/i.n) > 0)
+  _sd  = lambda: 0 if i.n <=2 else (i.m2/(i.n - 1)) ** .5
+  _ent = lambda: -sum(p*math.log(p,2) for n in i.has.values() if (p:=n/i.n) > 0)
+  return _sd()  if i.it is Num else (
+         _ent() if i.it is Sum else (
+         [spread(col) for col in self.cols.all]))
 
-def norm(num,v):
-  return v if v=="?" else (v - num.lo) / (num.hi - num.lo + 1/big)
+def norm(num,v): return v if v=="?" else (v-num.lo) / (num.hi-num.lo + 1/big)
 
+### Distance -------------------------------------------------------------------
 def minkowski(src):
   d, n = 0, 1/big
   for x in src:
@@ -103,9 +138,10 @@ def xdist(data, row1, row2):
     u = u if u != "?" else (0 if v > .5 else 1)
     v = v if v != "?" else (0 if u > .5 else 1)
     return abs(u - v) 
+
   return minkowski(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
 
-#-------------------------------------------------------------------------------
+### Cluster -------------------------------------------------------------------
 def project(data,row,a,b):
   X = lambda r1,r2: xdist(data,r1,r2)
   c = xdist(data,a,b)
@@ -137,44 +173,7 @@ def buckets(data, crnrs):
 def neighbors(a, bckts):
    return [b for b in bckts if all((abs(m,n) <= 1) for m,n in zip(a,b))]
 
-#-------------------------------------------------------------------------------
-def atom(x):
-  for what in (int, float):
-    try: return what(x)
-    except Exception: pass
-  x = x.strip()
-  y = x.lower()
-  return (y == "true") if y in ("true", "false") else x
-
-def csv(file):
-  with open(file, 'r', newline='', encoding='utf-8') as f:
-    for line in f:
-      if line:
-        yield [atom(s) for s in line.strip().split(',')] 
-
-def cli(d):
-  for k, v in d.items():
-    for c, arg in enumerate(sys.argv):
-      if arg == "-" + k[0]:
-        d[k] = atom("False" if str(v) == "True" else (
-                    "True" if str(v) == "False" else (
-                    sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
-
-def run(fn,x=None):
-  try: random.seed(the.seed); fn(x)
-  except Exception as e:
-    return [print(s.strip()) for s in traceback.format_tb(e.__traceback__)]
-
-def cat(v): 
-  it = type(v)
-  inf = float('inf')
-  if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
-  if it is float: return str(int(v)) if -inf<v<inf and v==int(v) else f"{v:.3g}"
-  if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
-  if it in [type(abs), type(cat)]: return v.__name__
-  return str(v)
-
-#-------------------------------------------------------------------------------
+### Demos ---------------------------------------------------------------------
 def eg_h(_): 
   ":        show help"
   print("\n"+__doc__.strip())
@@ -200,17 +199,30 @@ def eg__data(_):
   ":        demo data"
   data = Data(csv(the.file))
   print(data.n)
-  [print("x",col) for col in data.cols.x]
-  [print("y",col) for col in data.cols.y]
+  print("X"); [print("  ",col) for col in data.cols.x]
+  print("Y"); [print("  ",col) for col in data.cols.y]
 
 def eg__dist(_):
   ":        demo data"
   data = Data(csv(the.file))
   row1 = data._rows[0]
   assert all(0 <= xdist(data,row1,row2) <= 1 for row2 in data._rows)
-  assert all(0 <= ydist(data,row2) <= 1 for row2 in data._rows)
+  assert all(0 <= ydist(data,row2) <= 1      for row2 in data._rows)
 
-#-------------------------------------------------------------------------------
+### Start-up -------------------------------------------------------------------
+def cli(d):
+  for k, v in d.items():
+    for c, arg in enumerate(sys.argv):
+      if arg == "-" + k[0]:
+        d[k] = atom("False" if str(v) == "True" else (
+                    "True" if str(v) == "False" else (
+                    sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
+
+def run(fn,x=None):
+  try: random.seed(the.seed); fn(x)
+  except Exception as e:
+    return traceback.print_exc()
+
 the = o(**{m[1]: atom(m[2])
         for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)})
 

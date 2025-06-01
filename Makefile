@@ -63,7 +63,6 @@ docs/%.pdf: %.py Makefile ## make doco: .py ==> .pdf
 	echo "pdf-ing $@ ... "
 	a2ps                  \
 		-Br                  \
-		--portrait            \
 		--file-align=fill      \
 		--line-numbers=1        \
 		--pro=color              \
@@ -71,10 +70,14 @@ docs/%.pdf: %.py Makefile ## make doco: .py ==> .pdf
 		--borders=no               \
 	    --left-footer="$<  "      \
 	    --right-footer="page %s. of %s#"  \
-		--columns 2                          \
+		--landscape           \
+		--chars-per-line 100 \
+		--columns 3                          \
 		-M letter                             \
 		-o - $< | ps2pdf - $@
 	open $@
+		
+# --lines-per-page 150 \
 
 rq1:
 	python3 -B bingo.py -r $$RANDOM --buckets &
