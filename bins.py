@@ -7,10 +7,12 @@ Options, with (defaults):
 
   -b     bins    set bins (5)
   -d     dims    set dimensions (5)
+  -F     Few     a few rows to explore (64)
   -f     file    data name (../moot/optimize/misc/auto93.csv)
   -p     p       set mankowski coeffecient (2)
-  -s     seed    set random number seed (123456781)
-  -S     Some    a few rows to explore (128)
+  -r     rseed   set random number rseed (123456781)
+  -s     start   guesses, initial (4)
+  -S     Stop    guesses, max (20)
  """
 import traceback,random,math,sys,re
 sys.dont_write_bytecode = True
@@ -20,7 +22,8 @@ big = 1E32
 pick = random.choice
 picks = random.choices
 
-def adds(i, src): [add(i,x) for x in src]; return i
+def adds(i, src): 
+  [add(i,x) for x in src]; return i
 
 def atom(x):
   for what in (int, float):
@@ -31,13 +34,19 @@ def atom(x):
   return (y == "true") if y in ("true", "false") else x
 
 def csv(file):
+  n=0
   with open(file, 'r', newline='', encoding='utf-8') as f:
     for line in f:
       if line:
-        yield [atom(s) for s in line.strip().split(',')] 
+        yield [atom(s) for s in line.strip().split(',')] + [n if n else "IdX"]
+        n = n + 1
+
+def shuffle(lst):
+  random.shuffle(lst)
+  return lst
 
 def cat(v): 
-  it  = type(v)
+  it = type(v)
   inf = float('inf')
   if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
   if it is float: return str(int(v)) if -inf<v<inf and v==int(v) else f"{v:.3g}"
@@ -51,7 +60,8 @@ class o:
 
 ### Create ---------------------------------------------------------------------
 def Num(inits=[],at=0, txt=" "):
-  return adds(o(it=Num, at=at, txt=txt, n=0, m2=0,mu=0, hi= -big, lo= big, 
+  return adds(o(it=Num, at=at, txt=txt, n=0, 
+                sd=0, m2=0,mu=0, hi= -big, lo= big, 
                 goal= 0 if txt[-1] == "-" else 1), inits)
 
 def Sym(inits=[], at=0, txt=" "):
@@ -69,9 +79,13 @@ def Data(inits):
   inits=iter(inits)
   return adds( o(it=Data, n=0, _rows=[], cols=Cols(next(inits))), inits)
 
-def clone(data, rows=[]): return adds(data(), [data.names] + rows)
+def clone(data, rows=[]): 
+  return adds(data(), [data.names] + rows)
 
 ### Update ---------------------------------------------------------------------
+def sub(i,v,purge=False): 
+  return add(i, v, inc= -1, purge=purge)
+
 def add(i,v, inc=1, purge=False): # -> v
   def _sym(sym,s): sym.has[s] = inc + sym.has.get(s,0)
 
@@ -86,34 +100,33 @@ def add(i,v, inc=1, purge=False): # -> v
     num.lo = min(n, num.lo)
     num.hi = max(n, num.hi)
     if inc < 0 and num.n < 2: 
-      num.m2 = num.mu = num.n = 0
+      num.sd = num.m2 = num.mu = num.n = 0
     else:
       d       = n - num.mu
       num.mu += inc * (d / num.n)
       num.m2 += inc * (d * (n - num.mu))
+      num.sd  = 0 if num.n <=2 else (num.m2/(num.n - 1)) ** .5
 
   if v != "?": 
     i.n += inc
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
 
-def sub(i,v,purge=False): return add(i, v, inc= -1, purge=purge)
 
 ### Query ----------------------------------------------------------------------
 def mid(i):
   _mode = lambda: max(i.has,key=i.has.get)
   return i.mu    if i.it is Num else (
-         _mode() if i.it is Sym else (
-         [mid(col) for col in self.cols.all]))
+         _mode() if i.it is Sym else ([mid(col) for col in self.cols.all]))
 
 def spread(i):
-  _sd  = lambda: 0 if i.n <=2 else (i.m2/(i.n - 1)) ** .5
   _ent = lambda: -sum(p*math.log(p,2) for n in i.has.values() if (p:=n/i.n) > 0)
-  return _sd()  if i.it is Num else (
-         _ent() if i.it is Sum else (
-         [spread(col) for col in self.cols.all]))
+  return i.sd   if i.it is Num else (
+         _ent() if i.it is Sym else ([spread(col) for col in self.cols.all]))
 
-def norm(num,v): return v if v=="?" else (v-num.lo) / (num.hi-num.lo + 1/big)
+def norm(num,v): 
+  return v if v=="?" else (v-num.lo) / (num.hi-num.lo + 1/big)
+
 
 ### Distance -------------------------------------------------------------------
 def minkowski(src):
@@ -128,6 +141,11 @@ def ydist(data, row):
 
 def ysort(data,rows=None):
    return sorted(rows or data._rows, key=lambda row: ydist(data,row))
+
+def win(data,row):
+  rows=ysort(data)
+  lo, mu = ydist(data,rows[0]), ydist(data, rows[len(rows)//2])
+  return 1 - (ydist(data,row) - lo)/(mu - lo)
 
 def xdist(data, row1, row2):  
   def _aha(col,u,v):
@@ -145,17 +163,17 @@ def xdist(data, row1, row2):
 def project(data,row,a,b):
   X = lambda r1,r2: xdist(data,r1,r2)
   c = xdist(data,a,b)
-  return 0 if c==0 else (X(row,a)^2 + c^2 - X(row,b)^2) / (2*c*c) 
+  return 0 if c==0 else (X(row,a)**2 + c**2 - X(row,b)**2) / (2*c*c) 
 
 def bucket(data,row,a,b):
   return min(int( project(data,row,a,b) * the.bins), the.bins - 1)
 
 def extrapolate(data,row,a,b):
   ya, yb = ydist(data,a), ydist(data,b)
-  return ya + project(data,row,a,b) * (yb - ya)  
+  return ya + project(data,row,a,b) * (yb - ya)
 
 def corners(data): 
-  r0, *some = picks(data._rows, k=the.Some + 1)
+  r0, *some = picks(data._rows, k=the.Few + 1)
   out = [max(some, key=lambda r1: xdist(data,r1, r0))]
   for _ in range(the.dims):
     out += [max(some, key=lambda r2: sum(xdist(data,r1,r2) for r1 in out))]
@@ -163,23 +181,58 @@ def corners(data):
 
 def buckets(data, crnrs): 
   out = {}
+  random.shuffle(data._rows)
   for row in data._rows:
     k = tuple(bucket(data,row, a, b) for a, b in zip(crnrs, crnrs[1:]))
-    out[k] = out.get(k) or clone(data)
-    add(out[k], row)
-  minPts = 2 if data.n < 100 else max(4, 2*the.Dims)
-  return {k:data for k,data in out.items() if data.n >= minPts}
+    out[k] = out.get(k) or []
+    out[k] += [row]
+  minPts = 2 if data.n < 100 else max(4, 2*the.dims)
+  return {k:shuffle(rows)[:6] for k,rows in out.items() if len(rows) >= minPts}
 
-def neighbors(a, bckts):
-   return [b for b in bckts if all((abs(m,n) <= 1) for m,n in zip(a,b))]
+def rarified(data0):
+  txt=[f"D{d}" for d in range(the.dims)]+[c.txt for c in data0.cols.y]+["IdX"]
+  data1 = Data([txt])
+  for key,rows in buckets(data0, corners(data0)).items():
+    for row in rows:
+       row = list(key) + [row[c.at] for c in data0.cols.y] + [row[-1]]
+       add(data1,row)
+  return data1
+
+def slide(data, rows, npairs=30):
+  pairs = random.sample(list(rows), min(npairs,len(rows)))
+  for i, r1 in enumerate(pairs):
+    for j, r2 in enumerate(pairs):
+      if i > j:
+        y1 = ydist(data, r1)
+        y2 = ydist(data, r2)
+        dx = xdist(data, r1, r2)
+        m  = (y1 - y2) / (dx + 1/big)
+        yield (-m, r1, r2) if m < 0 else (m, r2, r1)
+    #m,a,b = max(slide(data,done))
+
+def slides(data0,data):
+  done, todo = data._rows[:the.start], data._rows[the.start:]
+  while len(done) < the.Stop and len(todo) > 5:
+    a, b, *_ = ysort(data, done)
+    top, *todo = sorted(todo, reverse=True, key=lambda r: extrapolate(data,r,a,b))
+    done += [top]
+  best = sorted(done, key=lambda r: ydist(data0,r))[0]
+  print(len(done), win(data0, best))
 
 ### Demos ---------------------------------------------------------------------
 def eg_h(_): 
   ":        show help"
-  print("\n"+__doc__.strip())
+  print("\n"+__doc__.strip());
   for s,fn in globals().items():
     if s.startswith("eg_"):
       print(f"  {s[2:].replace("_","-"):6s} {fn.__doc__[1:]}")
+
+def eg__all(_): 
+  ":        run demos"
+  for s,fn in globals().items():
+    if s.startswith("eg_") and s!="eg__all":
+      print(f"\n# {'-'*78}\n# {s}\n")
+      run(fn)
 
 def eg__the(_): 
   ":        show config"
@@ -208,6 +261,46 @@ def eg__dist(_):
   row1 = data._rows[0]
   assert all(0 <= xdist(data,row1,row2) <= 1 for row2 in data._rows)
   assert all(0 <= ydist(data,row2) <= 1      for row2 in data._rows)
+  lst = ysort(data)
+  [print(round(ydist(data,row),2), row) for row in lst[:3] + lst[-3:]]
+
+def eg__proj(_):
+  ":        demo project"
+  data = Data(csv(the.file))
+  r = lambda: pick(data._rows)
+  print(cat(sorted(project(data,r(),r(),r())  for _ in data._rows[::20])))
+
+def eg__bckts(_):
+  ":       demo buckets"
+  data = Data(csv(the.file))
+  crns = corners(data)     
+  bckts= buckets(data,crns) 
+  print(the.dims, the.bins, len(bckts), the.file.replace(".*/",""))
+
+def eg__xtra(_):
+  ":        demo project"
+  data = Data(csv(the.file))
+  r = lambda: pick(data._rows)
+  Y = lambda row: ydist(data,row)
+  out=[]
+  for _ in data._rows[::20]:
+    a,b,x = r(),r(),r()
+    out += [o(x=project(data,x,a,b),ya=Y(a),yb=Y(b),
+              yc=extrapolate(data,x,a,b), dy=slope(data,a,c))]
+  [print(z) for z in sorted(out,key=lambda z:z.dy)]
+
+def eg__rare(_):
+  ":        demo rarified"
+  data0 = Data(csv(the.file))
+  for _ in range(20):
+    data1 = rarified(data0)
+    num1  = Num(ydist(data0,r) for r in data0._rows)
+    num2  = Num(ydist(data1,r) for r in data1._rows)
+    slides(data0,data1)
+  # print("")
+  # print(num1)
+  # print(num2, len(data1.cols.all))
+  # print(data1._rows[-1])
 
 ### Start-up -------------------------------------------------------------------
 def cli(d):
@@ -219,9 +312,12 @@ def cli(d):
                     sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
 
 def run(fn,x=None):
-  try: random.seed(the.seed); fn(x)
+  try:  
+    random.seed(the.rseed)
+    fn(x)
   except Exception as e:
-    return traceback.print_exc()
+    tb = traceback.format_exc().splitlines()[4:]
+    return sys.stdout.write("\n".join(tb) + "\n")
 
 the = o(**{m[1]: atom(m[2])
         for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)})

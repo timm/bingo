@@ -100,6 +100,15 @@ rq1Report:
 				       print(2^b, n[b], R(b,has1), R(b,has2), R(b,sum)) } \
 	      function R(b,a) { return int(a[b]/n[b]) }'
 
+stats: ../moot/optimize/[bchmp]*/*.csv
+	{ $(foreach f,$^, gawk 'END{print(NR,NF,FILENAME)}' $f; ) } | sort -n
+
+rare: ../moot/optimize/[bchmp]*/*.csv
+	$(foreach f,$^, (python3 bins.py -f $f --rare &);)
+
+buckets: ../moot/optimize/[bchmp]*/*.csv
+	$(foreach f,$^, (python3 bins.py -b 4 -d 4 -f $f --bckts &);)
+
 acquires: ../moot/optimize/[bchmp]*/*.csv
 	$(foreach f,$^, (python3 bingo.py -f $f --acquires &); )
 
