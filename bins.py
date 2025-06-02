@@ -33,13 +33,15 @@ def atom(x):
   y = x.lower()
   return (y == "true") if y in ("true", "false") else x
 
-def csv(file):
-  n=0
+def doc(file):
   with open(file, 'r', newline='', encoding='utf-8') as f:
     for line in f:
-      if line:
-        yield [atom(s) for s in line.strip().split(',')] + [n if n else "IdX"]
-        n = n + 1
+      if line: yield line
+
+def csv(src,n=0):
+  for line in src:
+    yield [atom(s) for s in line.strip().split(',')] + [n if n else "IdX"]
+    n = n + 1
 
 def shuffle(lst):
   random.shuffle(lst)
@@ -220,6 +222,7 @@ def slides(data0,data):
   print(len(done), win(data0, best))
 
 ### Demos ---------------------------------------------------------------------
+#### Utils
 def eg_h(_): 
   ":        show help"
   print("\n"+__doc__.strip());
@@ -238,6 +241,7 @@ def eg__the(_):
   ":        show config"
   print(the)
 
+#### Update
 def eg__nums(_):
   ":        demo num"
   num=Num([random.gauss(10,2) for _ in range(1000)])
@@ -248,38 +252,41 @@ def eg__sym(_):
   sym = Sym("aaaabbc")
   assert "a"==mid(sym) and 1.3 < spread(sym) < 1.4
 
+#### Create
 def eg__data(_):
   ":        demo data"
-  data = Data(csv(the.file))
+  data = Data(csv(file(the.file)))
   print(data.n)
   print("X"); [print("  ",col) for col in data.cols.x]
   print("Y"); [print("  ",col) for col in data.cols.y]
 
+#### Distance
 def eg__dist(_):
   ":        demo data"
-  data = Data(csv(the.file))
+  data = Data(csv(file(the.file)))
   row1 = data._rows[0]
   assert all(0 <= xdist(data,row1,row2) <= 1 for row2 in data._rows)
   assert all(0 <= ydist(data,row2) <= 1      for row2 in data._rows)
   lst = ysort(data)
   [print(round(ydist(data,row),2), row) for row in lst[:3] + lst[-3:]]
 
+#### Cluster
 def eg__proj(_):
   ":        demo project"
-  data = Data(csv(the.file))
+  data = Data(csv(file(the.file)))
   r = lambda: pick(data._rows)
   print(cat(sorted(project(data,r(),r(),r())  for _ in data._rows[::20])))
 
 def eg__bckts(_):
   ":       demo buckets"
-  data = Data(csv(the.file))
+  data = Data(csv(file(the.file)))
   crns = corners(data)     
   bckts= buckets(data,crns) 
   print(the.dims, the.bins, len(bckts), the.file.replace(".*/",""))
 
 def eg__xtra(_):
   ":        demo project"
-  data = Data(csv(the.file))
+  data = Data(csv(file(the.file)))
   r = lambda: pick(data._rows)
   Y = lambda row: ydist(data,row)
   out=[]
@@ -291,7 +298,7 @@ def eg__xtra(_):
 
 def eg__rare(_):
   ":        demo rarified"
-  data0 = Data(csv(the.file))
+  data0 = Data(csv(file(the.file)))
   for _ in range(20):
     data1 = rarified(data0)
     num1  = Num(ydist(data0,r) for r in data0._rows)
