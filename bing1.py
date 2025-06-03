@@ -5,17 +5,20 @@ bing1.py: stochastic landscape analysis for multi objective reasoning
 
 Options, with (defaults):
 
-  -A     Acq     xploit or xplore or adapt (xploit)  
-  -F     Few     a few rows to explore (64)
-  -G     Guess   division best and rest (0.5)
-  -f     file    data name (../moot/optimize/misc/auto93.csv)
-  -k     k       bayes hack for rare classes (1)
-  -l     leaf    min leaf size (2)
-  -m     m       bayes hack for rare attributes (2)
-  -p     p       set mankowski coeffecient (2)
-  -r     rseed   set random number rseed (123456781)
-  -s     start   guesses, initial (4)
-  -S     Stop    guesses, max (20)
+  -A   Acq        xploit or xplore or adapt (xploit)  
+  -B   Boots      significance threshold (0.95)
+  -b   bootstrap  num. bootstrap samples (512)
+  -C   Cliffs     effect size threshold (0.197)
+  -F   Few        a few rows to explore (64)
+  -G   Guess      division best and rest (0.5)
+  -f   file       data name (../moot/optimize/misc/auto93.csv)
+  -k   k          bayes hack for rare classes (1)
+  -l   leaf       min leaf size (2)
+  -m   m          bayes hack for rare attributes (2)
+  -p   p          set mankowski coeffecient (2)
+  -r   rseed      set random number rseed (123456781)
+  -s   start      guesses, initial (4)
+  -S   Stop       guesses, max (20)
  """
 import traceback,random,math,sys,re
 sys.dont_write_bytecode = True
@@ -440,6 +443,79 @@ def cat(v):
 class o:
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: cat(i.__dict__)
+
+### Stats ---------------------------------------------------------------------
+def report(rows, head, decs=2):
+  w=[0] * len(head)
+  Str  = lambda x   : f"{x:.{decs}f}"     if type(x) is float else str(x)
+  say  = lambda w,x : f"{x:>{w}.{decs}f}" if type(x) is float else f"{x:>{w}}"
+  says = lambda row : ' |  '.join([say(w1, x) for w1, x in zip(w, row)])
+  for row in [head]+rows: 
+    w = [max(b4, len(Str(x))) for b4,x in zip(w,row)]
+  print(says(head))
+  print(' |  '.join('-'*(w1) for w1 in w))
+  for row in rows: print(says(row))
+
+# non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
+def bootstrap(vals1, vals2):
+  _delta = lambda i,j: abs(i.mu - j.mu) / ((i.sd**2/i.n + j.sd**2/j.n)**.5 + 1/big)
+  x,y,z = Num(vals1+vals2), Num(vals1), Num(vals2)
+  yhat  = [y1 - mid(y) + mid(x) for y1 in vals1]
+  zhat  = [z1 - mid(z) + mid(x) for z1 in vals2] 
+  n     = 0
+  for _ in range(the.bootstrap):
+    n += _delta(Num(picks(yhat, k=len(yhat))), 
+                Num(picks(zhat, k=len(zhat)))) > _delta(y,z) 
+  return n / the.bootstrap >= (1- the.Boots)
+
+# Non-parametric effect size from Tb1 of  doi.org/10.3102/10769986025002101
+def cliffs(vals1,vals2):
+   n,lt,gt = 0,0,0
+   for x in vals1:
+     for y in vals2:
+        n += 1
+        if x > y: gt += 1
+        if x < y: lt += 1 
+   return abs(lt - gt)/n  < the.Cliffs # 0.197)  #med=.28, small=.11
+
+# def sk(d, eps=0, reverse=False,rank=0):
+#   def _med(lst): return lst[len(lst)//1]
+#   def _three(k,lst): return _med(lst)l, lst, k
+#   def _samples(): return sorted([three(k,sorted(d[k)) for k in d],key x:x[0])
+#   def _combine(lst): return sorted([x for (_xs,_) in  lst for x in xs])
+#   all = _samples()
+#   b4 = _med(_combine(all))
+#   cut = None
+#   for i in range(samples):
+#     l,r = _combine(d[:i]),_combine(d[:i])
+#     m1,mr = _med(l), _med(r)
+#     if abs(ml - mr) < eps or  cliffs(l,r) and bootstrap[(l,r)): continue
+#     tmp = (abs(m1-b4)*len(l) + abs(mr-b4)*len(r)) / (len(l)+len(r))
+#     if tmp > most: most,cut=tmp,i
+#   if cut:
+#      rank= sk(d[:cut], eps=eps,rank=rank) + 1
+#      rank =sd(d[cut:], eps=eps, rank=rank)
+#   else:
+#
+#
+#
+#
+#
+# def vals2RankedNums(d, eps=0, reverse=False):
+#   def _samples():            return [_sample(d[k],k) for k in d]
+#   def _sample(vals,txt=" "): return o(vals=vals, num=adds(Num(txt=txt),vals))
+#   def _same(b4,now):         return (abs(b4.num.mu - now.num.mu) < eps or
+#                                     cliffs(b4.vals, now.vals) and 
+#                                     bootstrap(b4.vals, now.vals))
+#   tmp,out = [],{}
+#   for now in sorted(_samples(), key=lambda z:z.num.mu, reverse=reverse):
+#     if tmp and _same(tmp[-1], now): 
+#       tmp[-1] = _sample(tmp[-1].vals + now.vals)
+#     else: 
+#       tmp += [ _sample(now.vals) ]
+#     now.num.rank = chr(96+len(tmp))
+#     out[now.num.txt] = now.num 
+#   return out
 
 ### Demos ---------------------------------------------------------------------
 #### Utils
