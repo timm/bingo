@@ -101,7 +101,7 @@ rq1Report:
 	      function R(b,a) { return int(a[b]/n[b]) }'
 
 stats: ../moot/optimize/[bchmp]*/*.csv
-	{ $(foreach f,$^, gawk 'END{print(NR,NF,FILENAME)}' $f; ) } | sort -n
+	{ $(foreach f,$^, gawk -F, 'END{print(NR,NF,FILENAME)}' $f; ) } | sort -n
 
 rare: ../moot/optimize/[bchmp]*/*.csv
 	$(foreach f,$^, (python3 bins.py -f $f --rare &);)
