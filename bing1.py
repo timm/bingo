@@ -5,20 +5,26 @@ bing1.py: stochastic landscape analysis for multi objective reasoning
 
 Options, with (defaults):
 
+  -f   file       data name (../moot/optimize/misc/auto93.csv)
+  -r   rseed      set random number rseed (123456781)
+  -F   Few        a few rows to explore (64)
+  -l   leaf       tree learning: min leaf size (2)
+  -p   p          distance calcs: set mankowski coeffecient (2)
+
+Options for Bayes:
+  -k   k          bayes hack for rare classes (1)
+  -m   m          bayes hack for rare attributes (2)
+
+Options for active Learning:
   -A   Acq        xploit or xplore or adapt (xploit)  
+  -s   start      guesses, initial (4)
+  -S   Stop       guesses, max (20)
+  -G   Guess      division best and rest (0.5)
+
+Options for stats:
   -B   Boots      significance threshold (0.95)
   -b   bootstrap  num. bootstrap samples (512)
   -C   Cliffs     effect size threshold (0.197)
-  -F   Few        a few rows to explore (64)
-  -G   Guess      division best and rest (0.5)
-  -f   file       data name (../moot/optimize/misc/auto93.csv)
-  -k   k          bayes hack for rare classes (1)
-  -l   leaf       min leaf size (2)
-  -m   m          bayes hack for rare attributes (2)
-  -p   p          set mankowski coeffecient (2)
-  -r   rseed      set random number rseed (123456781)
-  -s   start      guesses, initial (4)
-  -S   Stop       guesses, max (20)
  """
 import traceback,random,math,sys,re
 sys.dont_write_bytecode = True
@@ -130,7 +136,7 @@ Max_spout, hashing, Spliters, Counters, Throughput+, Latency-
 
 ### Create ---------------------------------------------------------------------
 # Summary of numeric columns.
-def Num(inits=[],at=0, txt=" "):
+def Num(inits=[],at=0, txt=" ", rank=0):
   return adds(o(it=Num, 
                 n=0,       ## items seen
                 at=at,     ## column position
@@ -141,6 +147,7 @@ def Num(inits=[],at=0, txt=" "):
                 hi= -big,  ## biggest seen
                 lo= big,   ## smallest seen
                 heaven= (0 if txt[-1] == "-" else 1) ## 0,1 = minimze,maximize
+                rank= rank ## used by stats, ignored otherwise
                 ), inits)
 
 # Summary of symboloc columns.
@@ -478,44 +485,34 @@ def cliffs(vals1,vals2):
         if x < y: lt += 1 
    return abs(lt - gt)/n  < the.Cliffs # 0.197)  #med=.28, small=.11
 
-# def sk(d, eps=0, reverse=False,rank=0):
-#   def _med(lst): return lst[len(lst)//1]
-#   def _three(k,lst): return _med(lst)l, lst, k
-#   def _samples(): return sorted([three(k,sorted(d[k)) for k in d],key x:x[0])
-#   def _combine(lst): return sorted([x for (_xs,_) in  lst for x in xs])
-#   all = _samples()
-#   b4 = _med(_combine(all))
-#   cut = None
-#   for i in range(samples):
-#     l,r = _combine(d[:i]),_combine(d[:i])
-#     m1,mr = _med(l), _med(r)
-#     if abs(ml - mr) < eps or  cliffs(l,r) and bootstrap[(l,r)): continue
-#     tmp = (abs(m1-b4)*len(l) + abs(mr-b4)*len(r)) / (len(l)+len(r))
-#     if tmp > most: most,cut=tmp,i
-#   if cut:
-#      rank= sk(d[:cut], eps=eps,rank=rank) + 1
-#      rank =sd(d[cut:], eps=eps, rank=rank)
-#   else:
-#
-#
-#
-#
-#
-# def vals2RankedNums(d, eps=0, reverse=False):
-#   def _samples():            return [_sample(d[k],k) for k in d]
-#   def _sample(vals,txt=" "): return o(vals=vals, num=adds(Num(txt=txt),vals))
-#   def _same(b4,now):         return (abs(b4.num.mu - now.num.mu) < eps or
-#                                     cliffs(b4.vals, now.vals) and 
-#                                     bootstrap(b4.vals, now.vals))
-#   tmp,out = [],{}
-#   for now in sorted(_samples(), key=lambda z:z.num.mu, reverse=reverse):
-#     if tmp and _same(tmp[-1], now): 
-#       tmp[-1] = _sample(tmp[-1].vals + now.vals)
-#     else: 
-#       tmp += [ _sample(now.vals) ]
-#     now.num.rank = chr(96+len(tmp))
-#     out[now.num.txt] = now.num 
-#   return out
+def scottKnot(rxs, eps=0, reverse=False):
+  def _same(a,b): return cliffs(a,b) and bootstrap(a,b)
+
+  def _cut(rxs):
+    n1 = s1 = most = 0
+    s0 = n2 = sum(s for _,_,s,_ in rxs)
+    n0 = s2 = sum(n for _,n,_,_ in rxs)
+    for i, (_,n,s,_) in enumerate(rxs):
+      if i > 0:
+        m0, m1, m2 = s0/n0, s1/n1, s2/n2
+        d = (n1*abs(m1 - m0) + n2*abs(m2 - m0)) / (n1 + n2)
+        if abs(m1 - m2) > eps and d > most: most, out = d, i
+      n1, s1, n2, s2 = n1+n, s1+s, n2-n, s2-s
+    return out if most else None
+
+  def _div(rxs, rank=0):
+    if (cut := _cut(rxs)):
+      l, r = rxs[:cut], rxs[cut:]
+      lx = [x for _,_,_,xs in l for x in xs]
+      rx = [x for _,_,_,xs in r for x in xs]
+      if not _same(lx, rx): return _div(r, _div(l, rank) + 1)
+    for row,_,_,_ in rxs: row.rank = rank
+    return rank
+
+  rxs = [(Num(vs, txt=k, rank=0), len(vs), sum(vs), vs) for k,vs in rxs.items()]
+  rxs = sorted(rxs, key=lambda x: x[0].mu, reverse=reverse)
+  _div(rxs)
+  return {n.txt:n for n,_,_,_ in rxs}
 
 ### Demos ---------------------------------------------------------------------
 #### Utils
