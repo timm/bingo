@@ -25,7 +25,7 @@ vim.opt.wrap = false               -- Do not wrap lines
 vim.opt.title = true               -- Set terminal title
 vim.opt.clipboard = "unnamedplus"  -- Share clipboard with system (copy/paste to/from other applications)
 
--- stop horizonal scrolling
+-- stop horizonal scrolling 
 vim.o.sidescrolloff = 999
 vim.o.sidescroll = 1
 
@@ -163,6 +163,57 @@ require("lazy").setup({
     lazy = false, -- Load conform eagerly so format-on-save works immediately
     opts = {},    -- Placeholder for conform options
   },
+  -- LSP configuration (e.g., for Lua)
+  {
+    "neovim/nvim-lspconfig",
+    event = { "BufReadPre", "BufNewFile" },
+    config = function()
+      require("lspconfig").lua_ls.setup({})
+    end
+  },
+  
+  -- Autocompletion (nvim-cmp)
+  {
+    "hrsh7th/nvim-cmp",
+    event = "InsertEnter",
+    dependencies = {
+      "hrsh7th/cmp-nvim-lsp",
+      "L3MON4D3/LuaSnip"
+    },
+    config = function()
+      local cmp = require("cmp")
+      cmp.setup {
+        mapping = cmp.mapping.preset.insert({
+          ["<Tab>"] = cmp.mapping.confirm({ select = true }),
+        }),
+        sources = {
+          { name = "nvim_lsp" },
+        },
+      }
+    end
+  },
+  -- Mason: auto-installs LSP servers
+  {
+    "williamboman/mason.nvim",
+    config = true
+  },
+  -- Mason + LSP bridge
+  {
+    "williamboman/mason-lspconfig.nvim",
+    dependencies = {
+      "neovim/nvim-lspconfig",
+      "williamboman/mason.nvim"
+    },
+    config = function()
+      require("mason-lspconfig").setup({
+        ensure_installed = { "pyright" }
+      })
+  
+      local lspconfig = require("lspconfig")
+      local servers = require("mason-lspconfig").get_installed_servers()
+      require("lspconfig").pyright.setup({})
+    end
+  }
 })
 
 -- Load and setup Catppuccin colorscheme (ensure this is called after lazy.nvim setup)
@@ -230,4 +281,35 @@ vim.api.nvim_create_autocmd("TermOpen", {
   callback = function()
     vim.opt_local.modifiable = false -- or vim.bo.modifiable = false
   end,
+})
+
+vim.diagnostic.config({
+  virtual_text = true,  -- shows inline warnings/errors
+  signs = true,         -- shows in the sign column
+  underline = true,
+  update_in_insert = false,
+})
+
+require("lspconfig").lua_ls.setup({
+  settings = {
+    Lua = {
+      diagnostics = {
+        globals = { "vim" },  -- tell LSP that "vim" is a known global
+      },
+    },
+  },
+})
+
+
+-- warning control
+require("lspconfig").pyright.setup({
+  settings = {
+    python = {
+      analysis = {
+        typeCheckingMode = "off",  -- disables most type warnings
+        diagnosticMode = "workspace", -- still checks across project
+        useLibraryCodeForTypes = true,
+      },
+    },
+  }
 })

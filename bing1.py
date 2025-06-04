@@ -27,7 +27,7 @@ Stats:
   -C   Cliffs     effect size threshold (0.197)
  """
 import traceback,random,math,sys,re
-sys.dont_write_bytecode = True
+sys.dont_write_bytecode = True 
 
 ### Sample data ----------------------------------------------------------------
 EXAMPLE="""
@@ -134,7 +134,67 @@ Max_spout, hashing, Spliters, Counters, Throughput+, Latency-
 1000     , off    , 3       , 3       , 19036      , 595.91
 """
 
+### Utils ----------------------------------------------------------------------
+#### Shortcuts
+big = 1E32
+pick = random.choice
+picks = random.choices
+
+#### Shuffle
+def shuffle(lst):
+  random.shuffle(lst)
+  return lst
+
+#### Bulk inits
+def adds(i, src): 
+  [add(i,x) for x in src]; return i
+
+#### Read iterators.
+
+# Iterate over lines in a file.
+def doc(file):
+  with open(file, 'r', newline='', encoding='utf-8') as f:
+    for line in f: yield line
+
+# Iterate over lines in a string.
+def lines(s):
+ for line in s.splitlines(): yield line
+
+# Interate over rows read from lines.
+def csv(src):
+  for line in src:
+    if line: yield [atom(s) for s in line.strip().split(',')]
+
+#### Coerce
+
+# String to thing
+def atom(x):
+  for what in (int, float):
+    try: return what(x)
+    except Exception: pass
+  x = x.strip()
+  y = x.lower()
+  return (y == "true") if y in ("true", "false") else x
+
+# Thing to string.
+def cat(v): 
+  it = type(v)
+  inf = float('inf')
+  if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
+  if it is float: return str(int(v)) if -inf<v<inf and v==int(v) else f"{v:.3g}"
+  if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
+  if it in [type(abs), type(cat)]: return v.__name__ + '()'
+  return str(v)
+
+#### Simple Classes
+
+# Easy inits. Can print itself.
+class o:
+  __init__ = lambda i, **d: i.__dict__.update(**d)
+  __repr__ = lambda i: cat(i.__dict__)
+
 ### Create ---------------------------------------------------------------------
+
 # Summary of numeric columns.
 def Num(inits=[],at=0, txt=" ", rank=0):
   return adds(o(it=Num, 
@@ -151,7 +211,7 @@ def Num(inits=[],at=0, txt=" ", rank=0):
                 ), inits)
 
 # Summary of symbolic columns.
-def Sym(inits=[], at=0, txt=" "):
+def Sym( inits=[], at=0, txt=" "):
   return adds(o(it=Sym, 
                 n=0,      ## items see
                 at=at,    ## column position 
@@ -185,7 +245,7 @@ def clone(data, rows=[]):
   return Data([data.cols.names]+rows)
 
 ### Update ---------------------------------------------------------------------
-# Subtraction means add, with a negative increment
+# Subtraction means add, with a negative increment  
 def sub(i,v,purge=False): 
   return add(i, v, inc= -1, purge=purge)
 
@@ -285,7 +345,7 @@ def acquires(data):
            sub(best,  best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
 
-### Distance -------------------------------------------------------------------
+### Distance -------------------------------------------------------------------
 # Return pth root of the sum of the distances raises to p.
 def minkowski(src):
   d, n = 0, 1/big
@@ -319,7 +379,7 @@ def xdist(data, row1, row2):
 def kpp(data, k=None, rows=None):
   k = k or the.Stop
   row,  *rows = shuffle(rows or data._rows)
-  some, rest  = rows[:the.Few], rows[the.Few:] 
+  some = rows[:the.Few]
   centroids   = [row]
   for _ in range(1, k):
     dists = [min(xdist(data,x,y)**2 for y in centroids) for x in some]
@@ -350,7 +410,7 @@ def cuts(col,rows,Y,Klass):
         d[x] = d[x] if x in d else Klass()
         add(d[x], Y(row))
     return o(div = sum(c.n/n * spread(c) for c in d.values()),
-             hows = [("==",sym.at, k) for k,v in d.items()])
+             hows = [("==",sym.at, k) for k,_ in d.items()])
 
   def _num(num):
     out, b4, lhs, rhs = None, None, Klass(), Klass()
@@ -410,67 +470,11 @@ def show(data, key=lambda z:z.ys.mu):
     if lvl > 0:
       op,at,y = node.how
       xplain = f"{data.cols.all[at].txt} {op} {y}"
-    print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    {(lvl-1) * '|  '}{xplain}" + post)
+    indent = (lvl - 1) * "|  "
+    print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
+          f"{indent}{xplain}{post}")
  
-### Utils ----------------------------------------------------------------------
-#### Shortcuts
-big = 1E32
-pick = random.choice
-picks = random.choices
-
-#### Shuffle
-def shuffle(lst):
-  random.shuffle(lst)
-  return lst
-
-#### Bulk inits
-def adds(i, src): 
-  [add(i,x) for x in src]; return i
-
-#### Read iterators.
-# Iterate over lines in a file.
-def doc(file):
-  with open(file, 'r', newline='', encoding='utf-8') as f:
-    for line in f: yield line
-
-# Iterate over lines in a string.
-def lines(s):
- for line in s.splitlines(): yield line
-
-# Interate over rows read from lines.
-def csv(src):
-  for line in src:
-    if line: yield [atom(s) for s in line.strip().split(',')]
-
-#### Coerce
-
-##### String to thing
-def atom(x):
-  for what in (int, float):
-    try: return what(x)
-    except Exception: pass
-  x = x.strip()
-  y = x.lower()
-  return (y == "true") if y in ("true", "false") else x
-
-##### Thing to string.
-def cat(v): 
-  it = type(v)
-  inf = float('inf')
-  if it is list:  return "{" + ", ".join(map(cat, v)) + "}"
-  if it is float: return str(int(v)) if -inf<v<inf and v==int(v) else f"{v:.3g}"
-  if it is dict:  return cat([f":{k} {cat(w)}" for k, w in v.items()])
-  if it in [type(abs), type(cat)]: return v.__name__ + '()'
-  return str(v)
-
-#### Simple class. 
-
-# Easy inits. Can print itself.
-class o:
-  __init__ = lambda i, **d: i.__dict__.update(**d)
-  __repr__ = lambda i: cat(i.__dict__)
-
-### Stats ---------------------------------------------------------------------
+### Stats ---------------------------------------------------------------------
 # Table pretty print (aligns columns).
 def report(rows, head, decs=2):
   w=[0] * len(head)
@@ -484,7 +488,7 @@ def report(rows, head, decs=2):
   for row in rows: print(says(row))
 
 # Non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
-# 2 distributions are the same if, often, we see differences just by chance.
+# 2 distributions are the same if, often, we `_see` differences just by chance.
 # We center both samples around the combined mean to simulate
 # what data might look like if vals1 and vals2 came from the same population.
 def bootstrap(vals1, vals2):
@@ -494,8 +498,8 @@ def bootstrap(vals1, vals2):
   zhat  = [z1 - mid(z) + mid(x) for z1 in vals2] 
   n     = 0
   for _ in range(the.bootstrap):
-    n += _delta(Num(picks(yhat, k=len(yhat))), 
-                Num(picks(zhat, k=len(zhat)))) > _see(y,z) 
+    n += _see(Num(picks(yhat, k=len(yhat))), 
+              Num(picks(zhat, k=len(zhat)))) > _see(y,z) 
   return n / the.bootstrap >= (1- the.Boots)
 
 # Non-parametric effect size from Tb1 of  doi.org/10.3102/10769986025002101
@@ -551,7 +555,7 @@ def eg__str(_):
   ":        show string --> csv"
   s,n = 0,0
   for row in csv(lines(EXAMPLE)): 
-    assert len(row)==5
+    assert len(row)==6
     if type(row[0]) is str: s += 1
     if type(row[0]) in [int,float]: n += 1
   assert s==1 and n==100
@@ -576,6 +580,7 @@ def eg__cols(_):
 
 def eg__data(file):
   ":        csv data --> data"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
   print(data.n)
   print("X"); [print("  ",col) for col in data.cols.x]
   print("Y"); [print("  ",col) for col in data.cols.y]

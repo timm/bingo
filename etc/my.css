@@ -1,3 +1,30 @@
-p   { text-align:right; }
+p,h4   { text-align:right; }
 pre { font-size: small; } 
+h3,h4  { text-transform: none;       }
 h2  { border-top: 1px solid #CCC; }
+
+ body {
+    counter-reset: section;
+  }
+
+  h2::before {
+    counter-increment: section;
+    content: "Part " counter(section) ". ";
+    font-weight: normal;
+  }
+
+@media print {
+  * {
+    font-size: 8pt !important;
+    line-height: 1.1 !important;
+  }
+
+  h4, p {
+    text-align: left !important;
+  }
+
+  body {
+    margin: 0.4in;
+  }
+}
+
