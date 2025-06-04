@@ -25,6 +25,16 @@ vim.opt.wrap = false               -- Do not wrap lines
 vim.opt.title = true               -- Set terminal title
 vim.opt.clipboard = "unnamedplus"  -- Share clipboard with system (copy/paste to/from other applications)
 
+-- stop horizonal scrolling
+vim.o.sidescrolloff = 999
+vim.o.sidescroll = 1
+
+-- start terminal in insert mode
+vim.api.nvim_create_autocmd("TermOpen", {
+  pattern = "*",
+  command = "startinsert"
+})
+
 -- Set leader key to spacebar (common and ergonomic choice)
 vim.g.mapleader = " "
 vim.g.maplocalleader = " "
