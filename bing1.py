@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
-bing1.py: stochastic landscape analysis for multi objective reasoning
-(c) 2025 Tim Menseedzies, <timm@ieee.org>. MIT license
+bing1.py: tiny AI. multi objective, explainable, AI
+(c) 2025 Tim Menzies, <timm@ieee.org>. MIT license
 
 Options, with (defaults):
 
@@ -9,19 +9,19 @@ Options, with (defaults):
   -r   rseed      set random number rseed (123456781)
   -F   Few        a few rows to explore (64)
   -l   leaf       tree learning: min leaf size (2)
-  -p   p          distance calcs: set mankowski coeffecient (2)
+  -p   p          distance calcs: set Minkowski coefficient (2)
 
-Options for Bayes:
+Bayes:
   -k   k          bayes hack for rare classes (1)
   -m   m          bayes hack for rare attributes (2)
 
-Options for active Learning:
+Active learning:
   -A   Acq        xploit or xplore or adapt (xploit)  
   -s   start      guesses, initial (4)
   -S   Stop       guesses, max (20)
   -G   Guess      division best and rest (0.5)
 
-Options for stats:
+Stats:
   -B   Boots      significance threshold (0.95)
   -b   bootstrap  num. bootstrap samples (512)
   -C   Cliffs     effect size threshold (0.197)
@@ -146,11 +146,11 @@ def Num(inits=[],at=0, txt=" ", rank=0):
                 m2=0,      ## second moment
                 hi= -big,  ## biggest seen
                 lo= big,   ## smallest seen
-                heaven= (0 if txt[-1] == "-" else 1) ## 0,1 = minimze,maximize
+                heaven= (0 if txt[-1] == "-" else 1), ## 0,1 = minimize,maximize
                 rank= rank ## used by stats, ignored otherwise
                 ), inits)
 
-# Summary of symboloc columns.
+# Summary of symbolic columns.
 def Sym(inits=[], at=0, txt=" "):
   return adds(o(it=Sym, 
                 n=0,      ## items see
@@ -185,7 +185,7 @@ def clone(data, rows=[]):
   return Data([data.cols.names]+rows)
 
 ### Update ---------------------------------------------------------------------
-# Subtraction means add, with a neative incre
+# Subtraction means add, with a negative increment
 def sub(i,v,purge=False): 
   return add(i, v, inc= -1, purge=purge)
 
@@ -198,7 +198,8 @@ def add(i,v, inc=1, purge=False): # -> v
       if purge: data._rows.remove(v) 
       [sub(col, row[col.at], inc) for col in data.cols.all]  
     else: 
-      data._rows += [[add(col, row[col.at],inc) for col in data.cols.all]]
+      data._rows += [row] # update rows
+      [add(col, row[col.at],inc) for col in data.cols.all] # update columns
 
   def _num(num,n): 
     num.lo = min(n, num.lo)
@@ -217,13 +218,13 @@ def add(i,v, inc=1, purge=False): # -> v
   return v
 
 ### Query ----------------------------------------------------------------------
-# Middle tendancy.
+# Middle tendency.
 def mid(i):
   _mode = lambda: max(i.has,key=i.has.get)
   return i.mu    if i.it is Num else (
          _mode() if i.it is Sym else ([mid(col) for col in i.cols.all]))
 
-# Spread around middle tendancy.
+# Spread around middle tendency.
 def spread(i):
   _ent = lambda: -sum(p*math.log(p,2) for n in i.has.values() if (p:=n/i.n) > 0)
   return i.sd   if i.it is Num else (
@@ -234,19 +235,19 @@ def norm(num,v):
   return v if v=="?" else (v-num.lo) / (num.hi-num.lo + 1/big)
 
 ### Bayes ----------------------------------------------------------------------
-# Return the `data` in `datas` that likes this `row` the most.
+# Return the `data` in `datas` that likes `row` the most.
 def likes(datas, row):
   n = sum(data.n for data in datas)
   return max(datas, key=lambda data: like(data, row, n, len(datas)))
 
-# How much does this `data` like this `row`?
+# Report how much `data` like `row`.
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at],prior) 
          for c in data.cols.x if row[c.at] != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
 
-# Pdf of `v` in Nums or Syms.
+# How probable is it that  `v` belongs to a column?
 def pdf(col,v, prior=0):
   if col.it is Sym:
     return (col.has.get(s,0) + the.m*prior) / (col.n + the.m + 1/big)
@@ -255,7 +256,7 @@ def pdf(col,v, prior=0):
   z = (v - col.mu) ** 2 / var
   return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
 
-# Split rows to best,rest. Label row that's e.g. max best/rest."
+# Split rows to best,rest. Label row that's e.g. max best/rest. Repeat.
 def acquires(data):
   def _acquire(b, r, acq="xploit", p=1):
     b,r = math.e**b, math.e**r
@@ -274,12 +275,14 @@ def acquires(data):
   rest      = clone(data, done[cut:])
   while len(todo) > 2 and n < the.Stop:
     n      += 1
-    hi, *lo = sorted(todo[:the.Few*2], key=_guess, reverse=True)
+    hi, *lo = sorted(todo[:the.Few*2], # runs 100 times faster if only sort a Few
+                    key=_guess, reverse=True)
     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
     add(bestrest, add(best, hi))
     best._rows = ysort(bestrest)
     if len(best._rows) >= round(n**the.Guess):
-       add(rest, sub(best,  best._rows.pop(-1)))
+       add(rest, # runs 100 times faster if incremental update
+           sub(best,  best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
 
 ### Distance -------------------------------------------------------------------
@@ -295,9 +298,11 @@ def minkowski(src):
 def ydist(data, row):  
   return minkowski(abs(norm(c, row[c.at]) - c.heaven) for c in data.cols.y)
 
+# Sort rows by distance to heaven.
 def ysort(data,rows=None):
    return sorted(rows or data._rows, key=lambda row: ydist(data,row))
 
+# Distance between independent attributes.
 def xdist(data, row1, row2):  
   def _aha(col,u,v):
     if u=="?" and v=="?": return 1 
@@ -327,12 +332,15 @@ def kpp(data, k=None, rows=None):
   return centroids
 
 ### Tree -----------------------------------------------------------------------
+# ge, eq, gt
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
        '>'  : lambda x,y: x >  y}
 
+# select a row
 def selects(row, op, at, y): x=row[at]; return  x=="?" or ops[op](x,y) 
 
+# what cuts most reduces spread?
 def cuts(col,rows,Y,Klass): 
   def _sym(sym): 
     n,d = 0,{}
@@ -361,6 +369,7 @@ def cuts(col,rows,Y,Klass):
 
   return (_sym if col.it is Sym else _num)(col)
 
+# Split data on best cut. Recurse on each split.
 def tree(data, Klass=Num, Y=None, how=None):
   Y         = Y or (lambda row: ydist(data,row))
   data.kids = []
@@ -375,17 +384,20 @@ def tree(data, Klass=Num, Y=None, how=None):
           data.kids += [tree(clone(data,rows1), Klass, Y, how1)]  
   return data
 
+# Iterate over all nodes.
 def nodes(data1, lvl=0, key=None): 
   yield lvl, data1
   for data2 in (sorted(data1.kids, key=key) if key else data1.kids):
     yield from nodes(data2, lvl + 1, key=key)
 
+# Return leaf selected by row.
 def leaf(data1,row):
   for data2 in data1.kids or []:
     if selects(row, *data2.how): 
       return leaf(data2, row)
   return data1
 
+# Pretty print a tree
 def show(data, key=lambda z:z.ys.mu):
   stats = data.ys
   win = lambda x: 100-int(100*(x-stats.lo)/(stats.mu - stats.lo))
@@ -401,33 +413,38 @@ def show(data, key=lambda z:z.ys.mu):
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    {(lvl-1) * '|  '}{xplain}" + post)
  
 ### Utils ----------------------------------------------------------------------
-# Shortcuts
+#### Shortcuts
 big = 1E32
 pick = random.choice
 picks = random.choices
 
-# Shiffle
+#### Shuffle
 def shuffle(lst):
   random.shuffle(lst)
   return lst
 
-# Bulk inits
+#### Bulk inits
 def adds(i, src): 
   [add(i,x) for x in src]; return i
 
-# Read iterators.
+#### Read iterators.
+# Iterate over lines in a file.
 def doc(file):
   with open(file, 'r', newline='', encoding='utf-8') as f:
     for line in f: yield line
 
+# Iterate over lines in a string.
 def lines(s):
- for line in s.splitlines(): yield line.strip()
+ for line in s.splitlines(): yield line
 
+# Interate over rows read from lines.
 def csv(src):
   for line in src:
     if line: yield [atom(s) for s in line.strip().split(',')]
 
-# String to thing
+#### Coerce
+
+##### String to thing
 def atom(x):
   for what in (int, float):
     try: return what(x)
@@ -436,7 +453,7 @@ def atom(x):
   y = x.lower()
   return (y == "true") if y in ("true", "false") else x
 
-# Thing to strimg
+##### Thing to string.
 def cat(v): 
   it = type(v)
   inf = float('inf')
@@ -446,12 +463,15 @@ def cat(v):
   if it in [type(abs), type(cat)]: return v.__name__ + '()'
   return str(v)
 
-# Simple class. Easy inits. Can print itself.
+#### Simple class. 
+
+# Easy inits. Can print itself.
 class o:
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: cat(i.__dict__)
 
 ### Stats ---------------------------------------------------------------------
+# Table pretty print (aligns columns).
 def report(rows, head, decs=2):
   w=[0] * len(head)
   Str  = lambda x   : f"{x:.{decs}f}"     if type(x) is float else str(x)
@@ -463,7 +483,7 @@ def report(rows, head, decs=2):
   print(' |  '.join('-'*(w1) for w1 in w))
   for row in rows: print(says(row))
 
-# non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
+# Non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
 def bootstrap(vals1, vals2):
   _delta = lambda i,j: abs(i.mu - j.mu) / ((i.sd**2/i.n + j.sd**2/j.n)**.5 + 1/big)
   x,y,z = Num(vals1+vals2), Num(vals1), Num(vals2)
@@ -485,34 +505,38 @@ def cliffs(vals1,vals2):
         if x < y: lt += 1 
    return abs(lt - gt)/n  < the.Cliffs # 0.197)  #med=.28, small=.11
 
-def scottKnot(rxs, eps=0, reverse=False):
+# Recurive bi-cluster of treatments. Stops when splits are the same.
+def scottKnott(rxs, eps=0, reverse=False):
   def _same(a,b): return cliffs(a,b) and bootstrap(a,b)
+  def _flat(rxs): return  [x for _,_,_,lst in rxs for x in lst]
 
   def _cut(rxs):
-    n1 = s1 = most = 0
-    s0 = n2 = sum(s for _,_,s,_ in rxs)
-    n0 = s2 = sum(n for _,n,_,_ in rxs)
+    out, most = None,0
+    n1 = s1 = 0
+    s0 = s2 = sum(s for _,_,s,_ in rxs)
+    n0 = n2 = sum(n for _,n,_,_ in rxs)
     for i, (_,n,s,_) in enumerate(rxs):
       if i > 0:
         m0, m1, m2 = s0/n0, s1/n1, s2/n2
-        d = (n1*abs(m1 - m0) + n2*abs(m2 - m0)) / (n1 + n2)
-        if abs(m1 - m2) > eps and d > most: most, out = d, i
+        if abs(m1 - m2) > eps:
+          if (tmp := (n1*abs(m1 - m0) + n2*abs(m2 - m0)) / (n1 + n2)) > most:
+            most, out = tmp, i
       n1, s1, n2, s2 = n1+n, s1+s, n2-n, s2-s
-    return out if most else None
+    return out 
 
   def _div(rxs, rank=0):
-    if (cut := _cut(rxs)):
-      l, r = rxs[:cut], rxs[cut:]
-      lx = [x for _,_,_,xs in l for x in xs]
-      rx = [x for _,_,_,xs in r for x in xs]
-      if not _same(lx, rx): return _div(r, _div(l, rank) + 1)
+    if len(rxs) > 1:
+      if (cut := _cut(rxs)):
+        left, right = rxs[:cut], rxs[cut:]
+        if not _same(_flat(left), _flat(right)): 
+          return _div(right, _div(left, rank) + 1)
     for row,_,_,_ in rxs: row.rank = rank
     return rank
 
-  rxs = [(Num(vs, txt=k, rank=0), len(vs), sum(vs), vs) for k,vs in rxs.items()]
-  rxs = sorted(rxs, key=lambda x: x[0].mu, reverse=reverse)
+  rxs = [(Num(a,txt=k, rank=0), len(a), sum(a), a) for k,a in rxs.items()]
+  rxs.sort(key=lambda x: x[0].mu, reverse=reverse)
   _div(rxs)
-  return {n.txt:n for n,_,_,_ in rxs}
+  return {num.txt:num for num,_,_,_ in rxs}
 
 ### Demos ---------------------------------------------------------------------
 #### Utils
@@ -593,7 +617,7 @@ def eg__bayes(file):
   print(cat(sorted([like(data,row,2,1000) for row in data._rows[::10]])))
 
 def eg__lite(file):
-  ":       demo active elarning"
+  ":       demo active learning"
   data = Data(csv(doc(file) if file else lines(EXAMPLE)))
   b4   = [ydist(data, row) for row in data._rows][::8]
   now  = [ydist(data, acquires(data).best._rows[0]) for _ in range(12)]
@@ -602,26 +626,56 @@ def eg__lite(file):
 
 #### Tree
 def eg__tree(file):
-  ":       demo active elarning"
+  ":       demo active learning"
   data = Data(csv(doc(file) if file else lines(EXAMPLE)))
   show(tree(data))
+
+#### Stats
+def eg__stats(_):
+   def c(b): return 1 if b else 0
+   b4 = [random.gauss(1,1)+ random.gauss(10,1)**0.5 for _ in range(59)]
+   d=0.5
+   while d < 1.5:
+     now = [x+d*random.random() for x in b4]
+     b1  = cliffs(b4,now)
+     b2  = bootstrap(b4,now)
+     print(o(agree=c(b1==b2), cliffs=c(b1), boot=c(b2),d=d))
+     d += 0.05
+
+def eg__rank(_):
+   n=100
+   d=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+          copy1 = [random.gauss(20,1) for _ in range(n)],
+          now1  = [random.gauss(20,1) for _ in range(n)],
+          copy2 = [random.gauss(40,1) for _ in range(n)],
+          now2  = [random.gauss(40,1) for _ in range(n)])
+   [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(d).values()]
+
+def eg__rank2(_):
+   n=100
+   d=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+          copy1 = [random.gauss(20,1) for _ in range(n)])
+   [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(d).values()]
 
 #### Control
 def eg__all(_): 
   ":        run all demos"
   for s,fn in globals().items():
     if s.startswith("eg_") and s!="eg__all":
-      print(f"\n# {'-'*78}\n# {s}\n")
+      print(f"\n{'-'*78}\n## {s}\n")
+      print("\n```")
       run(fn)
+      print("```\n")
 
 def eg_h(_): 
   ":        show help"
   print("\n"+__doc__);
   for s,fn in globals().items():
     if s.startswith("eg_"):
-      print(f"  {s[2:].replace("_","-"):6s} {fn.__doc__[1:]}")
+      print(f"  {s[2:].replace("_","-"):6s} {(fn.__doc__ or " ")[1:]}")
 
 ### Start-up -------------------------------------------------------------------
+# Update slot `k` in dictionary `d` from CLI flags matching `k`.
 def cli(d):
   for k, v in d.items():
     for c, arg in enumerate(sys.argv):
@@ -630,6 +684,7 @@ def cli(d):
                     "True" if str(v) == "False" else (
                     sys.argv[c + 1] if c < len(sys.argv) - 1 else str(v))))
 
+# Reset seed before running. Crashes print stack, but keep going.
 def run(fn,x=None):
   try:  
     random.seed(the.rseed)
@@ -638,9 +693,11 @@ def run(fn,x=None):
     tb = traceback.format_exc().splitlines()[4:]
     return sys.stdout.write("\n".join(tb) + "\n")
 
+# Geneate options struct from top-of-file string.
 the = o(**{m[1]: atom(m[2])
         for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)})
 
+# Maybe run command-line options.
 if __name__ == "__main__":
   cli(the.__dict__)
   for i,s in enumerate(sys.argv):
