@@ -30,6 +30,7 @@ import traceback,random,math,sys,re
 sys.dont_write_bytecode = True 
 
 ### Sample data ----------------------------------------------------------------
+
 EXAMPLE="""
 Max_spout, hashing, Spliters, Counters, Throughput+, Latency-
 1        , off    , 1       , 1       , 4255.3     , 2.5621
@@ -135,6 +136,7 @@ Max_spout, hashing, Spliters, Counters, Throughput+, Latency-
 """
 
 ### Utils ----------------------------------------------------------------------
+
 #### Shortcuts
 big = 1E32
 pick = random.choice
@@ -193,7 +195,22 @@ class o:
   __init__ = lambda i, **d: i.__dict__.update(**d)
   __repr__ = lambda i: cat(i.__dict__)
 
-### Create ---------------------------------------------------------------------
+#### Demos 4 Utils
+def eg__o(_):
+  ":        pretty print a struct"
+  print(o(name="alan", age=41, p=math.pi))
+  
+def eg__csv(_):
+  ":        show string --> csv"
+  s,n = 0,0
+  for i,row in enumerate(csv(lines(EXAMPLE))): 
+    if not i % 20: print(row)
+    assert len(row)==6
+    if type(row[0]) is str: s += 1
+    if type(row[0]) in [int,float]: n += 1
+  assert s==1 and n==100
+
+### Structs ---------------------------------------------------------------------
 
 # Summary of numeric columns.
 def Num(inits=[],at=0, txt=" ", rank=0):
@@ -244,7 +261,16 @@ def Data(inits):
 def clone(data, rows=[]):
   return Data([data.cols.names]+rows)
 
-### Update ---------------------------------------------------------------------
+#### Demos 4 Structs
+def eg__cols(_):
+  ":        List[str] --> columns"
+  cols = Cols(["name","Age","Salary+"])
+  for what,lst in (("x", cols.x), ("y",cols.y)):
+    print("\n"+what)
+    [print("\t"+cat(one)) for one in lst]
+
+### Update ---------------------------------------------------------------------
+
 # Subtraction means add, with a negative increment  
 def sub(i,v,purge=False): 
   return add(i, v, inc= -1, purge=purge)
@@ -277,7 +303,8 @@ def add(i,v, inc=1, purge=False): # -> v
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
 
-### Query ----------------------------------------------------------------------
+### Query 
+
 # Middle tendency.
 def mid(i):
   _mode = lambda: max(i.has,key=i.has.get)
@@ -294,7 +321,105 @@ def spread(i):
 def norm(num,v): 
   return v if v=="?" else (v-num.lo) / (num.hi-num.lo + 1/big)
 
+#### Demos 4 Update
+def eg__nums(_):
+  ":        nums --> summary"
+  num=Num([random.gauss(10,2) for _ in range(1000)])
+  assert 10 < mid(num) < 10.2 and 2 < spread(num) < 2.1
+
+def eg__sym(_):
+  ":        chars --> summary"
+  sym = Sym("aaaabbc")
+  assert "a"==mid(sym) and 1.3 < spread(sym) < 1.4
+
+def eg__data(file):
+  ":        csv data --> data"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  print(data.n)
+  print("X"); [print("  ",col) for col in data.cols.x]
+  print("Y"); [print("  ",col) for col in data.cols.y]
+
+def eg__addSub(file):
+  ":      demo row addition / deletion"
+  data1 = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  data2 = clone(data1)
+  for row in data1._rows:
+    add(data2,row)
+    if len(data2._rows)==100: 
+      mids    = mid(data2)
+      spreads = spread(data2)
+  for row in data1._rows[::-1]:
+    if len(data2._rows)==100: 
+      assert mids    == mid(data2)
+      assert spreads == spread(data2)
+      return
+    sub(data2, row)
+
+### Distance -------------------------------------------------------------------
+
+# Return pth root of the sum of the distances raises to p.
+def minkowski(src):
+  d, n = 0, 1/big
+  for x in src:
+    n += 1
+    d += x**the.p
+  return (d / n)**(1 / the.p)
+
+# Distance to heaven.
+def ydist(data, row):  
+  return minkowski(abs(norm(c, row[c.at]) - c.heaven) for c in data.cols.y)
+
+# Sort rows by distance to heaven.
+def ysort(data,rows=None):
+   return sorted(rows or data._rows, key=lambda row: ydist(data,row))
+
+# Distance between independent attributes.
+def xdist(data, row1, row2):  
+  def _aha(col,u,v):
+    if u=="?" and v=="?": return 1 
+    if col.it is Sym: return u!=v  
+    u = norm(col,u)
+    v = norm(col,v)
+    u = u if u != "?" else (0 if v > .5 else 1)
+    v = v if v != "?" else (0 if u > .5 else 1)
+    return abs(u - v) 
+
+  return minkowski(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
+
+# K-means plus plus: k points, usually D^2 distance from each other.
+def kpp(data, k=None, rows=None):
+  k = k or the.Stop
+  row,  *rows = shuffle(rows or data._rows)
+  some = rows[:the.Few]
+  centroids   = [row]
+  for _ in range(1, k):
+    dists = [min(xdist(data,x,y)**2 for y in centroids) for x in some]
+    r     = random.random() * sum(dists)
+    for j, d in enumerate(dists):
+      r -= d
+      if r <= 0:
+        centroids.append(some.pop(j))
+        break
+  return centroids
+
+#### Demos 4 Dist
+def eg__dist(file):
+  ":        demo data distances"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  row1 = ata._rows[0]
+  assert all(0 <= xdist(data,row1,row2) <= 1 for row2 in data._rows)
+  assert all(0 <= ydist(data,row2) <= 1      for row2 in data._rows)
+  lst = ysort(data)
+  [print(round(ydist(data,row),2), row) for row in lst[:3] + lst[-3:]]
+
+def eg__line(file):
+  ":        demo data distances"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  one = lambda: sorted([ydist(data,row) for row in kpp(data)])[0]
+  print(cat(sorted([one() for _ in range(20)])))
+
 ### Bayes ----------------------------------------------------------------------
+
 # Return the `data` in `datas` that likes `row` the most.
 def likes(datas, row):
   n = sum(data.n for data in datas)
@@ -345,53 +470,22 @@ def acquires(data):
            sub(best,  best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
 
-### Distance -------------------------------------------------------------------
-# Return pth root of the sum of the distances raises to p.
-def minkowski(src):
-  d, n = 0, 1/big
-  for x in src:
-    n += 1
-    d += x**the.p
-  return (d / n)**(1 / the.p)
+#### Demos 4 Bayes
+def eg__bayes(file):
+  ":       demo bayes"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  print(cat(sorted([like(data,row,2,1000) for row in data._rows[::10]])))
 
-# Distance to heaven.
-def ydist(data, row):  
-  return minkowski(abs(norm(c, row[c.at]) - c.heaven) for c in data.cols.y)
-
-# Sort rows by distance to heaven.
-def ysort(data,rows=None):
-   return sorted(rows or data._rows, key=lambda row: ydist(data,row))
-
-# Distance between independent attributes.
-def xdist(data, row1, row2):  
-  def _aha(col,u,v):
-    if u=="?" and v=="?": return 1 
-    if col.it is Sym: return u!=v  
-    u = norm(col,u)
-    v = norm(col,v)
-    u = u if u != "?" else (0 if v > .5 else 1)
-    v = v if v != "?" else (0 if u > .5 else 1)
-    return abs(u - v) 
-
-  return minkowski(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
-
-# K-means plus plus: k points, usually D^2 distance from each other.
-def kpp(data, k=None, rows=None):
-  k = k or the.Stop
-  row,  *rows = shuffle(rows or data._rows)
-  some = rows[:the.Few]
-  centroids   = [row]
-  for _ in range(1, k):
-    dists = [min(xdist(data,x,y)**2 for y in centroids) for x in some]
-    r     = random.random() * sum(dists)
-    for j, d in enumerate(dists):
-      r -= d
-      if r <= 0:
-        centroids.append(some.pop(j))
-        break
-  return centroids
+def eg__lite(file):
+  ":       demo active learning"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  b4   = [ydist(data, row) for row in data._rows][::8]
+  now  = [ydist(data, acquires(data).best._rows[0]) for _ in range(12)]
+  print(o(b4=sorted(b4)))
+  print(o(now=sorted(now)))
 
 ### Tree -----------------------------------------------------------------------
+
 # ge, eq, gt
 ops = {'<=' : lambda x,y: x <= y,
        "==" : lambda x,y: x == y,
@@ -474,7 +568,14 @@ def show(data, key=lambda z:z.ys.mu):
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
           f"{indent}{xplain}{post}")
  
+#### Demos 4 Tree
+def eg__tree(file):
+  ":       demo active learning"
+  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
+  show(tree(data))
+
 ### Stats ---------------------------------------------------------------------
+
 # Table pretty print (aligns columns).
 def report(rows, head, decs=2):
   w=[0] * len(head)
@@ -487,8 +588,8 @@ def report(rows, head, decs=2):
   print(' |  '.join('-'*(w1) for w1 in w))
   for row in rows: print(says(row))
 
-# Non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
-# 2 distributions are the same if, often, we `_see` differences just by chance.
+# Non-parametric significance test from Chp20,doi.org/10.1201/9780429246593.
+# Distributions are the same if, often, we `_see` differences just by chance.
 # We center both samples around the combined mean to simulate
 # what data might look like if vals1 and vals2 came from the same population.
 def bootstrap(vals1, vals2):
@@ -545,100 +646,7 @@ def scottKnott(rxs, eps=0, reverse=False):
   _div(rxs)
   return {num.txt:num for num,_,_,_ in rxs}
 
-### Demos ---------------------------------------------------------------------
-#### Utils
-def eg__the(_): 
-  ":        show config"
-  print(the)
-
-def eg__str(_):
-  ":        show string --> csv"
-  s,n = 0,0
-  for row in csv(lines(EXAMPLE)): 
-    assert len(row)==6
-    if type(row[0]) is str: s += 1
-    if type(row[0]) in [int,float]: n += 1
-  assert s==1 and n==100
-
-#### Create and Update
-def eg__nums(_):
-  ":        nums --> summary"
-  num=Num([random.gauss(10,2) for _ in range(1000)])
-  assert 10 < mid(num) < 10.2 and 2 < spread(num) < 2.1
-
-def eg__sym(_):
-  ":        chars --> summary"
-  sym = Sym("aaaabbc")
-  assert "a"==mid(sym) and 1.3 < spread(sym) < 1.4
-
-def eg__cols(_):
-  ":        List[str] --> columns"
-  cols = Cols(["name","Age","Salary+"])
-  for what,lst in (("x", cols.x), ("y",cols.y)):
-    print("\n"+what)
-    [print("\t"+cat(one)) for one in lst]
-
-def eg__data(file):
-  ":        csv data --> data"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  print(data.n)
-  print("X"); [print("  ",col) for col in data.cols.x]
-  print("Y"); [print("  ",col) for col in data.cols.y]
-
-#### Query
-def eg__addSub(file):
-  ":      demo row addition / deletion"
-  data1 = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  data2 = clone(data1)
-  for row in data1._rows:
-    add(data2,row)
-    if len(data2._rows)==100: 
-      mids    = mid(data2)
-      spreads = spread(data2)
-  for row in data1._rows[::-1]:
-    if len(data2._rows)==100: 
-      assert mids    == mid(data2)
-      assert spreads == spread(data2)
-      return
-    sub(data2, row)
-
-#### Distance
-def eg__dist(file):
-  ":        demo data distances"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  row1 = data._rows[0]
-  assert all(0 <= xdist(data,row1,row2) <= 1 for row2 in data._rows)
-  assert all(0 <= ydist(data,row2) <= 1      for row2 in data._rows)
-  lst = ysort(data)
-  [print(round(ydist(data,row),2), row) for row in lst[:3] + lst[-3:]]
-
-def eg__line(file):
-  ":        demo data distances"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  one = lambda: sorted([ydist(data,row) for row in kpp(data)])[0]
-  print(cat(sorted([one() for _ in range(20)])))
-
-#### Bayes
-def eg__bayes(file):
-  ":       demo bayes"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  print(cat(sorted([like(data,row,2,1000) for row in data._rows[::10]])))
-
-def eg__lite(file):
-  ":       demo active learning"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  b4   = [ydist(data, row) for row in data._rows][::8]
-  now  = [ydist(data, acquires(data).best._rows[0]) for _ in range(12)]
-  print(o(b4=sorted(b4)))
-  print(o(now=sorted(now)))
-
-#### Tree
-def eg__tree(file):
-  ":       demo active learning"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  show(tree(data))
-
-#### Stats
+#### Demos 4 Stats
 def eg__stats(_):
    def c(b): return 1 if b else 0
    b4 = [random.gauss(1,1)+ random.gauss(10,1)**0.5 for _ in range(59)]
@@ -665,24 +673,8 @@ def eg__rank2(_):
           copy1 = [random.gauss(20,1) for _ in range(n)])
    [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(d).values()]
 
-#### Control
-def eg__all(_): 
-  ":        run all demos"
-  for s,fn in globals().items():
-    if s.startswith("eg_") and s!="eg__all":
-      print(f"\n{'-'*78}\n## {s}\n")
-      print("\n```")
-      run(fn)
-      print("```\n")
+### Command-Line --------------------------------------------------------------
 
-def eg_h(_): 
-  ":        show help"
-  print("\n"+__doc__);
-  for s,fn in globals().items():
-    if s.startswith("eg_"):
-      print(f"  {s[2:].replace("_","-"):6s} {(fn.__doc__ or " ")[1:]}")
-
-### Start-up -------------------------------------------------------------------
 # Update slot `k` in dictionary `d` from CLI flags matching `k`.
 def cli(d):
   for k, v in d.items():
@@ -704,6 +696,26 @@ def run(fn,x=None):
 # Geneate options struct from top-of-file string.
 the = o(**{m[1]: atom(m[2])
         for m in re.finditer(r"-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)", __doc__)})
+
+def eg__the(_): 
+  ":        show config"
+  print(the)
+
+def eg__all(_): 
+  ":        run all demos"
+  for s,fn in globals().items():
+    if s.startswith("eg_") and s!="eg__all":
+      print(f"\n{'-'*78}\n## {s}\n")
+      print("\n```")
+      run(fn)
+      print("```\n")
+
+def eg_h(_): 
+  ":        show help"
+  print("\n"+__doc__);
+  for s,fn in globals().items():
+    if s.startswith("eg_"):
+      print(f"  {s[2:].replace("_","-"):6s} {(fn.__doc__ or " ")[1:]}")
 
 # Maybe run command-line options.
 if __name__ == "__main__":
