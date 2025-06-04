@@ -484,16 +484,17 @@ def report(rows, head, decs=2):
   for row in rows: print(says(row))
 
 # Non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
+# 2 distributions are the same if, often, we see differences just by chance.
 def bootstrap(vals1, vals2):
-  _delta = lambda i,j: abs(i.mu - j.mu) / ((i.sd**2/i.n + j.sd**2/j.n)**.5 + 1/big)
+  _see= lambda i,j: abs(i.mu - j.mu) / ((i.sd**2/i.n + j.sd**2/j.n)**.5 + 1/big)
   x,y,z = Num(vals1+vals2), Num(vals1), Num(vals2)
   yhat  = [y1 - mid(y) + mid(x) for y1 in vals1]
   zhat  = [z1 - mid(z) + mid(x) for z1 in vals2] 
   n     = 0
   for _ in range(the.bootstrap):
     n += _delta(Num(picks(yhat, k=len(yhat))), 
-                Num(picks(zhat, k=len(zhat)))) > _delta(y,z) 
-  return n / the.bootstrap >= (1- the.Boots)
+                Num(picks(zhat, k=len(zhat)))) > _see(y,z) 
+  return n / the.bootstrap <= (1- the.Boots)
 
 # Non-parametric effect size from Tb1 of  doi.org/10.3102/10769986025002101
 def cliffs(vals1,vals2):
