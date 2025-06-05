@@ -192,28 +192,28 @@ require("lazy").setup({
       }
     end
   },
-  -- Mason: auto-installs LSP servers
-  {
-    "williamboman/mason.nvim",
-    config = true
-  },
-  -- Mason + LSP bridge
-  {
-    "williamboman/mason-lspconfig.nvim",
-    dependencies = {
-      "neovim/nvim-lspconfig",
-      "williamboman/mason.nvim"
-    },
-    config = function()
-      require("mason-lspconfig").setup({
-        ensure_installed = { "pyright" }
-      })
-  
-      local lspconfig = require("lspconfig")
-      local servers = require("mason-lspconfig").get_installed_servers()
-      require("lspconfig").pyright.setup({})
-    end
-  }
+  -- -- Mason: auto-installs LSP servers
+  -- {
+  --   "williamboman/mason.nvim",
+  --   config = true
+  -- },
+  -- -- Mason + LSP bridge
+  -- {
+  --   "williamboman/mason-lspconfig.nvim",
+  --   dependencies = {
+  --     "neovim/nvim-lspconfig",
+  --     "williamboman/mason.nvim"
+  --   },
+  --   config = function()
+  --     require("mason-lspconfig").setup({
+  --       --ensure_installed = { "pyright" }
+  --     })
+  --
+  --     local lspconfig = require("lspconfig")
+  --     local servers = require("mason-lspconfig").get_installed_servers()
+  --     --require("lspconfig").pyright.setup({})
+  --   end
+  -- }
 })
 
 -- Load and setup Catppuccin colorscheme (ensure this is called after lazy.nvim setup)
@@ -301,15 +301,15 @@ require("lspconfig").lua_ls.setup({
 })
 
 
--- warning control
-require("lspconfig").pyright.setup({
-  settings = {
-    python = {
-      analysis = {
-        typeCheckingMode = "off",  -- disables most type warnings
-        diagnosticMode = "workspace", -- still checks across project
-        useLibraryCodeForTypes = true,
-      },
-    },
-  }
-})
+-- -- warning control
+-- require("lspconfig").pyright.setup({
+--   settings = {
+--     python = {
+--       analysis = {
+--         typeCheckingMode = "off",  -- disables most type warnings
+--         diagnosticMode = "workspace", -- still checks across project
+--         useLibraryCodeForTypes = true,
+--       },
+--     },
+--   }
+-- })
