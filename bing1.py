@@ -427,8 +427,8 @@ def eg__dist(file):
 def eg__line(file):
   ":         : demo data distances"
   data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  one = lambda: sorted([ydist(data,row) for row in kpp(data)])[0]
-  print(cat(sorted([one() for _ in range(20)])))
+  line = lambda: ydist(data, ysort(data,kpp(data))[0])
+  print(cat(sorted([line() for _ in range(20)])))
 
 ### Bayes ----------------------------------------------------------------------
 
@@ -662,19 +662,38 @@ def eg__stats(_):
 def eg__rank(_):
   ":         : demp, Scott-Knott, ranking distributions"
   n=100
-  d=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+  rxs=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
           copy1 = [random.gauss(20,1) for _ in range(n)],
           now1  = [random.gauss(20,1) for _ in range(n)],
           copy2 = [random.gauss(40,1) for _ in range(n)],
           now2  = [random.gauss(40,1) for _ in range(n)])
-  [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(d).values()]
+  [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(rxs).values()]
 
 def eg__rank2(_):
    ":        : check if Scott-Knott handles 2 distrubitions"
    n=100
-   d=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+   rxs=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
           copy1 = [random.gauss(20,1) for _ in range(n)])
-   [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(d).values()]
+   [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(rxs).values()]
+
+def eg__compare(_):
+  data = Data(csv(doc(the.file)))
+  def Best(F): 
+    random.shuffle(data._rows)
+    return ydist(data, ysort(data,F())[0]) 
+  rxs={}
+  for the.Stop in [6,12,24]:
+    for rx,f in (("line",lambda: kpp(data)),
+                 ("lite",lambda: acquires(data).best._rows),
+                 ("rand",lambda: random.choices(data._rows, k=the.Stop))):
+      print((rx,the.Stop), file=sys.stderr)
+      rxs[(rx, the.Stop)] = [Best(f) for _ in range(20)]
+  ranked = scottKnott(rxs)
+  order = sorted(ranked.keys(),key=lambda x: (x[0], x[1]))
+  print([(ranked[k].mu, chr(97+ranked[k].rank)) for k in order])
+     
+  # [print(o(rank=chr(97+num.rank), txt=num.txt, mu=num.mu)) 
+  #        for num in ranked]
 
 ### Command-Line --------------------------------------------------------------
 
