@@ -49,26 +49,26 @@ bing1.py: tiny AI. multi objective, explainable, AI
 
 Options, with (defaults):
 
-  -f   file       data name (../moot/optimize/misc/auto93.csv)
-  -r   rseed      set random number rseed (123456781)
-  -F   Few        a few rows to explore (64)
-  -l   leaf       tree learning: min leaf size (2)
-  -p   p          distance calcs: set Minkowski coefficient (2)
+  -f   file       : data name (../moot/optimize/misc/auto93.csv)
+  -r   rseed      : set random number rseed (123456781)
+  -F   Few        : a few rows to explore (64)
+  -l   leaf       : tree learning: min leaf size (2)
+  -p   p          : distance calcs: set Minkowski coefficient (2)
 
 Bayes:
-  -k   k          bayes hack for rare classes (1)
-  -m   m          bayes hack for rare attributes (2)
+  -k   k          : bayes hack for rare classes (1)
+  -m   m          : bayes hack for rare attributes (2)
 
 Active learning:
-  -A   Acq        xploit or xplore or adapt (xploit)  
-  -s   start      guesses, initial (4)
-  -S   Stop       guesses, max (20)
-  -G   Guess      division best and rest (0.5)
+  -A   Acq        : xploit or xplore or adapt (xploit)  
+  -s   start      : guesses, initial (4)
+  -S   Stop       : guesses, max (20)
+  -G   Guess      : division best and rest (0.5)
 
 Stats:
-  -B   Boots      significance threshold (0.95)
-  -b   bootstrap  num. bootstrap samples (512)
-  -C   Cliffs     effect size threshold (0.197)
+  -B   Boots      : significance threshold (0.95)
+  -b   bootstrap  : num. bootstrap samples (512)
+  -C   Cliffs     : effect size threshold (0.197)
  &quot;&quot;&quot;</span>
 <span class="hljs-keyword">import</span> traceback,random,math,sys,re
 sys.dont_write_bytecode = <span class="hljs-literal">True</span></pre></div></div>
@@ -384,9 +384,20 @@ picks = random.choices</pre></div></div>
               <div class="sswrap ">
                 <a class="ss" href="#section-14">&#x00a7;</a>
               </div>
-              <h3 id="simple-classes">Simple Classes</h3>
+              <p>Table pretty print (aligns columns).</p>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">report</span>(<span class="hljs-params">rows, head, decs=<span class="hljs-number">2</span></span>):
+  w=[<span class="hljs-number">0</span>] * <span class="hljs-built_in">len</span>(head)
+  Str  = <span class="hljs-keyword">lambda</span> x   : <span class="hljs-string">f&quot;<span class="hljs-subst">{x:.{decs}</span>f}&quot;</span>     <span class="hljs-keyword">if</span> <span class="hljs-built_in">type</span>(x) <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span> <span class="hljs-keyword">else</span> <span class="hljs-built_in">str</span>(x)
+  say  = <span class="hljs-keyword">lambda</span> w,x : <span class="hljs-string">f&quot;<span class="hljs-subst">{x:&gt;{w}</span>.<span class="hljs-subst">{decs}</span>f}&quot;</span> <span class="hljs-keyword">if</span> <span class="hljs-built_in">type</span>(x) <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span> <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;<span class="hljs-subst">{x:&gt;{w}</span>}&quot;</span>
+  says = <span class="hljs-keyword">lambda</span> row : <span class="hljs-string">&#x27; |  &#x27;</span>.join([say(w1, x) <span class="hljs-keyword">for</span> w1, x <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(w, row)])
+  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> [head]+rows: 
+    w = [<span class="hljs-built_in">max</span>(b4, <span class="hljs-built_in">len</span>(Str(x))) <span class="hljs-keyword">for</span> b4,x <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(w,row)]
+  <span class="hljs-built_in">print</span>(says(head))
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27; |  &#x27;</span>.join(<span class="hljs-string">&#x27;-&#x27;</span>*(w1) <span class="hljs-keyword">for</span> w1 <span class="hljs-keyword">in</span> w))
+  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows: <span class="hljs-built_in">print</span>(says(row))</pre></div></div>
             
         </li>
         
@@ -396,6 +407,19 @@ picks = random.choices</pre></div></div>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-15">&#x00a7;</a>
+              </div>
+              <h3 id="simple-classes">Simple Classes</h3>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-16">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-16">&#x00a7;</a>
               </div>
               <p>Easy inits. Can print itself.</p>
 
@@ -408,22 +432,22 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-16">
+        <li id="section-17">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-16">&#x00a7;</a>
+                <a class="ss" href="#section-17">&#x00a7;</a>
               </div>
               <h3 id="demos-4-utils">Demos 4 Utils</h3>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__o</span>(<span class="hljs-params">_</span>):
-  <span class="hljs-string">&quot;:        pretty print a struct&quot;</span>
+  <span class="hljs-string">&quot;:         : pretty print a struct&quot;</span>
   <span class="hljs-built_in">print</span>(o(name=<span class="hljs-string">&quot;alan&quot;</span>, age=<span class="hljs-number">41</span>, p=math.pi))
   
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__csv</span>(<span class="hljs-params">_</span>):
-  <span class="hljs-string">&quot;:        show string --&gt; csv&quot;</span>
+  <span class="hljs-string">&quot;:         : show string --&gt; csv&quot;</span>
   s,n = <span class="hljs-number">0</span>,<span class="hljs-number">0</span>
   <span class="hljs-keyword">for</span> i,row <span class="hljs-keyword">in</span> <span class="hljs-built_in">enumerate</span>(csv(lines(EXAMPLE))): 
     <span class="hljs-keyword">if</span> <span class="hljs-keyword">not</span> i % <span class="hljs-number">20</span>: <span class="hljs-built_in">print</span>(row)
@@ -435,11 +459,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-17">
+        <li id="section-18">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-17">&#x00a7;</a>
+                <a class="ss" href="#section-18">&#x00a7;</a>
               </div>
               <h2 id="structs">Structs</h2>
 
@@ -448,11 +472,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-18">
+        <li id="section-19">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-18">&#x00a7;</a>
+                <a class="ss" href="#section-19">&#x00a7;</a>
               </div>
               <p>Summary of numeric columns.</p>
 
@@ -475,11 +499,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-19">
+        <li id="section-20">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-19">&#x00a7;</a>
+                <a class="ss" href="#section-20">&#x00a7;</a>
               </div>
               <p>Summary of symbolic columns.</p>
 
@@ -496,11 +520,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-20">
+        <li id="section-21">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-20">&#x00a7;</a>
+                <a class="ss" href="#section-21">&#x00a7;</a>
               </div>
               <p>Factory. <br> List[str] -&gt; Dict[str, List[ Sym | Num ]]</p>
 
@@ -521,11 +545,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-21">
+        <li id="section-22">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-21">&#x00a7;</a>
+                <a class="ss" href="#section-22">&#x00a7;</a>
               </div>
               <p>Data stores rows and columns.</p>
 
@@ -545,35 +569,22 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-22">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-22">&#x00a7;</a>
-              </div>
-              <h3 id="demos-4-structs">Demos 4 Structs</h3>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__cols</span>(<span class="hljs-params">_</span>):
-  <span class="hljs-string">&quot;:        List[str] --&gt; columns&quot;</span>
-  cols = Cols([<span class="hljs-string">&quot;name&quot;</span>,<span class="hljs-string">&quot;Age&quot;</span>,<span class="hljs-string">&quot;Salary+&quot;</span>])
-  <span class="hljs-keyword">for</span> what,lst <span class="hljs-keyword">in</span> ((<span class="hljs-string">&quot;x&quot;</span>, cols.x), (<span class="hljs-string">&quot;y&quot;</span>,cols.y)):
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n&quot;</span>+what)
-    [<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\t&quot;</span>+cat(one)) <span class="hljs-keyword">for</span> one <span class="hljs-keyword">in</span> lst]</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-23">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-23">&#x00a7;</a>
               </div>
-              <h2 id="update">Update</h2>
+              <h3 id="demos-4-structs">Demos 4 Structs</h3>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__cols</span>(<span class="hljs-params">_</span>):
+  <span class="hljs-string">&quot;:         : List[str] --&gt; columns&quot;</span>
+  cols = Cols([<span class="hljs-string">&quot;name&quot;</span>,<span class="hljs-string">&quot;Age&quot;</span>,<span class="hljs-string">&quot;Salary+&quot;</span>])
+  <span class="hljs-keyword">for</span> what,lst <span class="hljs-keyword">in</span> ((<span class="hljs-string">&quot;x&quot;</span>, cols.x), (<span class="hljs-string">&quot;y&quot;</span>,cols.y)):
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n&quot;</span>+what)
+    [<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\t&quot;</span>+cat(one)) <span class="hljs-keyword">for</span> one <span class="hljs-keyword">in</span> lst]</pre></div></div>
             
         </li>
         
@@ -583,6 +594,19 @@ picks = random.choices</pre></div></div>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-24">&#x00a7;</a>
+              </div>
+              <h2 id="update">Update</h2>
+
+            </div>
+            
+        </li>
+        
+        
+        <li id="section-25">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-25">&#x00a7;</a>
               </div>
               <p>Subtraction means add, with a negative increment  </p>
 
@@ -594,11 +618,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-25">
+        <li id="section-26">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-25">&#x00a7;</a>
+                <a class="ss" href="#section-26">&#x00a7;</a>
               </div>
               <p>Add <code>v</code> to <code>i</code>. Skip unknowns (“?”), return v.</p>
 
@@ -634,11 +658,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-26">
+        <li id="section-27">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-26">&#x00a7;</a>
+                <a class="ss" href="#section-27">&#x00a7;</a>
               </div>
               <h2 id="query">Query</h2>
 
@@ -647,11 +671,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-27">
+        <li id="section-28">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-27">&#x00a7;</a>
+                <a class="ss" href="#section-28">&#x00a7;</a>
               </div>
               <p>Middle tendency.</p>
 
@@ -665,11 +689,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-28">
+        <li id="section-29">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-28">&#x00a7;</a>
+                <a class="ss" href="#section-29">&#x00a7;</a>
               </div>
               <p>Spread around middle tendency.</p>
 
@@ -683,11 +707,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-29">
+        <li id="section-30">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-29">&#x00a7;</a>
+                <a class="ss" href="#section-30">&#x00a7;</a>
               </div>
               <p>Map v –&gt; (0..1) for lo..hi.</p>
 
@@ -699,35 +723,35 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-30">
+        <li id="section-31">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-30">&#x00a7;</a>
+                <a class="ss" href="#section-31">&#x00a7;</a>
               </div>
               <h3 id="demos-4-update">Demos 4 Update</h3>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__nums</span>(<span class="hljs-params">_</span>):
-  <span class="hljs-string">&quot;:        nums --&gt; summary&quot;</span>
+  <span class="hljs-string">&quot;:         : nums --&gt; summary&quot;</span>
   num=Num([random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1000</span>)])
   <span class="hljs-keyword">assert</span> <span class="hljs-number">10</span> &lt; mid(num) &lt; <span class="hljs-number">10.2</span> <span class="hljs-keyword">and</span> <span class="hljs-number">2</span> &lt; spread(num) &lt; <span class="hljs-number">2.1</span>
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__sym</span>(<span class="hljs-params">_</span>):
-  <span class="hljs-string">&quot;:        chars --&gt; summary&quot;</span>
+  <span class="hljs-string">&quot;:         : chars --&gt; summary&quot;</span>
   sym = Sym(<span class="hljs-string">&quot;aaaabbc&quot;</span>)
   <span class="hljs-keyword">assert</span> <span class="hljs-string">&quot;a&quot;</span>==mid(sym) <span class="hljs-keyword">and</span> <span class="hljs-number">1.3</span> &lt; spread(sym) &lt; <span class="hljs-number">1.4</span>
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__data</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:        csv data --&gt; data&quot;</span>
+  <span class="hljs-string">&quot;:         : csv data --&gt; data&quot;</span>
   data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
   <span class="hljs-built_in">print</span>(data.n)
   <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;X&quot;</span>); [<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;  &quot;</span>,col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.x]
   <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Y&quot;</span>); [<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;  &quot;</span>,col) <span class="hljs-keyword">for</span> col <span class="hljs-keyword">in</span> data.cols.y]
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__addSub</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:      demo row addition / deletion&quot;</span>
+  <span class="hljs-string">&quot;:       : demo row addition / deletion&quot;</span>
   data1 = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
   data2 = clone(data1)
   <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> data1._rows:
@@ -745,11 +769,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-31">
+        <li id="section-32">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-31">&#x00a7;</a>
+                <a class="ss" href="#section-32">&#x00a7;</a>
               </div>
               <h2 id="distance">Distance</h2>
 
@@ -758,11 +782,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-32">
+        <li id="section-33">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-32">&#x00a7;</a>
+                <a class="ss" href="#section-33">&#x00a7;</a>
               </div>
               <p>Return pth root of the sum of the distances raises to p.</p>
 
@@ -778,11 +802,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-33">
+        <li id="section-34">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-33">&#x00a7;</a>
+                <a class="ss" href="#section-34">&#x00a7;</a>
               </div>
               <p>Distance to heaven.</p>
 
@@ -794,11 +818,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-34">
+        <li id="section-35">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-34">&#x00a7;</a>
+                <a class="ss" href="#section-35">&#x00a7;</a>
               </div>
               <p>Sort rows by distance to heaven.</p>
 
@@ -810,11 +834,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-35">
+        <li id="section-36">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-35">&#x00a7;</a>
+                <a class="ss" href="#section-36">&#x00a7;</a>
               </div>
               <p>Distance between independent attributes.</p>
 
@@ -835,11 +859,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-36">
+        <li id="section-37">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-36">&#x00a7;</a>
+                <a class="ss" href="#section-37">&#x00a7;</a>
               </div>
               <p>K-means plus plus: k points, usually D^2 distance from each other.</p>
 
@@ -863,43 +887,30 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-37">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-37">&#x00a7;</a>
-              </div>
-              <h3 id="demos-4-dist">Demos 4 Dist</h3>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__dist</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:        demo data distances&quot;</span>
-  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
-  row1 = ata._rows[<span class="hljs-number">0</span>]
-  <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(<span class="hljs-number">0</span> &lt;= xdist(data,row1,row2) &lt;= <span class="hljs-number">1</span> <span class="hljs-keyword">for</span> row2 <span class="hljs-keyword">in</span> data._rows)
-  <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(<span class="hljs-number">0</span> &lt;= ydist(data,row2) &lt;= <span class="hljs-number">1</span>      <span class="hljs-keyword">for</span> row2 <span class="hljs-keyword">in</span> data._rows)
-  lst = ysort(data)
-  [<span class="hljs-built_in">print</span>(<span class="hljs-built_in">round</span>(ydist(data,row),<span class="hljs-number">2</span>), row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> lst[:<span class="hljs-number">3</span>] + lst[-<span class="hljs-number">3</span>:]]
-
-<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__line</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:        demo data distances&quot;</span>
-  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
-  one = <span class="hljs-keyword">lambda</span>: <span class="hljs-built_in">sorted</span>([ydist(data,row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> kpp(data)])[<span class="hljs-number">0</span>]
-  <span class="hljs-built_in">print</span>(cat(<span class="hljs-built_in">sorted</span>([one() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">20</span>)])))</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-38">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-38">&#x00a7;</a>
               </div>
-              <h2 id="bayes">Bayes</h2>
+              <h3 id="demos-4-dist">Demos 4 Dist</h3>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__dist</span>(<span class="hljs-params">file</span>):
+  <span class="hljs-string">&quot;:         : demo data distances&quot;</span>
+  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
+  row1 = data._rows[<span class="hljs-number">0</span>]
+  <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(<span class="hljs-number">0</span> &lt;= xdist(data,row1,row2) &lt;= <span class="hljs-number">1</span> <span class="hljs-keyword">for</span> row2 <span class="hljs-keyword">in</span> data._rows)
+  <span class="hljs-keyword">assert</span> <span class="hljs-built_in">all</span>(<span class="hljs-number">0</span> &lt;= ydist(data,row2) &lt;= <span class="hljs-number">1</span>      <span class="hljs-keyword">for</span> row2 <span class="hljs-keyword">in</span> data._rows)
+  lst = ysort(data)
+  [<span class="hljs-built_in">print</span>(<span class="hljs-built_in">round</span>(ydist(data,row),<span class="hljs-number">2</span>), row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> lst[:<span class="hljs-number">3</span>] + lst[-<span class="hljs-number">3</span>:]]
+
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__line</span>(<span class="hljs-params">file</span>):
+  <span class="hljs-string">&quot;:         : demo data distances&quot;</span>
+  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
+  one = <span class="hljs-keyword">lambda</span>: <span class="hljs-built_in">sorted</span>([ydist(data,row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> kpp(data)])[<span class="hljs-number">0</span>]
+  <span class="hljs-built_in">print</span>(cat(<span class="hljs-built_in">sorted</span>([one() <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">20</span>)])))</pre></div></div>
             
         </li>
         
@@ -910,13 +921,9 @@ picks = random.choices</pre></div></div>
               <div class="sswrap ">
                 <a class="ss" href="#section-39">&#x00a7;</a>
               </div>
-              <p>Return the <code>data</code> in <code>datas</code> that likes <code>row</code> the most.</p>
+              <h2 id="bayes">Bayes</h2>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">likes</span>(<span class="hljs-params">datas, row</span>):
-  n = <span class="hljs-built_in">sum</span>(data.n <span class="hljs-keyword">for</span> data <span class="hljs-keyword">in</span> datas)
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">max</span>(datas, key=<span class="hljs-keyword">lambda</span> data: like(data, row, n, <span class="hljs-built_in">len</span>(datas)))</pre></div></div>
             
         </li>
         
@@ -926,25 +933,6 @@ picks = random.choices</pre></div></div>
               
               <div class="sswrap ">
                 <a class="ss" href="#section-40">&#x00a7;</a>
-              </div>
-              <p>Report how much <code>data</code> like <code>row</code>.</p>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">like</span>(<span class="hljs-params">data, row, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
-  prior = (data.n + the.k) / (nall + the.k*nh)
-  tmp = [pdf(c,row[c.at],prior) 
-         <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> data.cols.x <span class="hljs-keyword">if</span> row[c.at] != <span class="hljs-string">&quot;?&quot;</span>]
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(math.log(n) <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> tmp + [prior] <span class="hljs-keyword">if</span> n&gt;<span class="hljs-number">0</span>)</pre></div></div>
-            
-        </li>
-        
-        
-        <li id="section-41">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-41">&#x00a7;</a>
               </div>
               <p>How probable is it that  <code>v</code> belongs to a column?</p>
 
@@ -961,11 +949,47 @@ picks = random.choices</pre></div></div>
         </li>
         
         
+        <li id="section-41">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-41">&#x00a7;</a>
+              </div>
+              <p>Return the <code>data</code> in <code>datas</code> that likes <code>row</code> the most.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">likes</span>(<span class="hljs-params">datas, row</span>):
+  n = <span class="hljs-built_in">sum</span>(data.n <span class="hljs-keyword">for</span> data <span class="hljs-keyword">in</span> datas)
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">max</span>(datas, key=<span class="hljs-keyword">lambda</span> data: like(data, row, n, <span class="hljs-built_in">len</span>(datas)))</pre></div></div>
+            
+        </li>
+        
+        
         <li id="section-42">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-42">&#x00a7;</a>
+              </div>
+              <p>Report how much <code>data</code> like <code>row</code>.</p>
+
+            </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">like</span>(<span class="hljs-params">data, row, nall=<span class="hljs-number">2</span>, nh=<span class="hljs-number">100</span></span>):
+  prior = (data.n + the.k) / (nall + the.k*nh)
+  tmp = [pdf(c,row[c.at],prior) 
+         <span class="hljs-keyword">for</span> c <span class="hljs-keyword">in</span> data.cols.x <span class="hljs-keyword">if</span> row[c.at] != <span class="hljs-string">&quot;?&quot;</span>]
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">sum</span>(math.log(n) <span class="hljs-keyword">for</span> n <span class="hljs-keyword">in</span> tmp + [prior] <span class="hljs-keyword">if</span> n&gt;<span class="hljs-number">0</span>)</pre></div></div>
+            
+        </li>
+        
+        
+        <li id="section-43">
+            <div class="annotation">
+              
+              <div class="sswrap ">
+                <a class="ss" href="#section-43">&#x00a7;</a>
               </div>
               <p>Split rows to best,rest. Label row that’s e.g. max best/rest. Repeat.</p>
 
@@ -1002,23 +1026,23 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-43">
+        <li id="section-44">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-43">&#x00a7;</a>
+                <a class="ss" href="#section-44">&#x00a7;</a>
               </div>
               <h3 id="demos-4-bayes">Demos 4 Bayes</h3>
 
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__bayes</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:       demo bayes&quot;</span>
+  <span class="hljs-string">&quot;:        : demo bayes&quot;</span>
   data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
   <span class="hljs-built_in">print</span>(cat(<span class="hljs-built_in">sorted</span>([like(data,row,<span class="hljs-number">2</span>,<span class="hljs-number">1000</span>) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> data._rows[::<span class="hljs-number">10</span>]])))
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__lite</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:       demo active learning&quot;</span>
+  <span class="hljs-string">&quot;:         : demo active learning&quot;</span>
   data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
   b4   = [ydist(data, row) <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> data._rows][::<span class="hljs-number">8</span>]
   now  = [ydist(data, acquires(data).best._rows[<span class="hljs-number">0</span>]) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">12</span>)]
@@ -1028,11 +1052,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-44">
+        <li id="section-45">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-44">&#x00a7;</a>
+                <a class="ss" href="#section-45">&#x00a7;</a>
               </div>
               <h2 id="tree">Tree</h2>
 
@@ -1041,11 +1065,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-45">
+        <li id="section-46">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-45">&#x00a7;</a>
+                <a class="ss" href="#section-46">&#x00a7;</a>
               </div>
               <p>ge, eq, gt</p>
 
@@ -1058,11 +1082,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-46">
+        <li id="section-47">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-46">&#x00a7;</a>
+                <a class="ss" href="#section-47">&#x00a7;</a>
               </div>
               <p>select a row</p>
 
@@ -1073,11 +1097,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-47">
+        <li id="section-48">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-47">&#x00a7;</a>
+                <a class="ss" href="#section-48">&#x00a7;</a>
               </div>
               <p>what cuts most reduces spread?</p>
 
@@ -1114,11 +1138,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-48">
+        <li id="section-49">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-48">&#x00a7;</a>
+                <a class="ss" href="#section-49">&#x00a7;</a>
               </div>
               <p>Split data on best cut. Recurse on each split.</p>
 
@@ -1141,11 +1165,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-49">
+        <li id="section-50">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-49">&#x00a7;</a>
+                <a class="ss" href="#section-50">&#x00a7;</a>
               </div>
               <p>Iterate over all nodes.</p>
 
@@ -1159,11 +1183,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-50">
+        <li id="section-51">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-50">&#x00a7;</a>
+                <a class="ss" href="#section-51">&#x00a7;</a>
               </div>
               <p>Return leaf selected by row.</p>
 
@@ -1178,11 +1202,11 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-51">
+        <li id="section-52">
             <div class="annotation">
               
               <div class="sswrap ">
-                <a class="ss" href="#section-51">&#x00a7;</a>
+                <a class="ss" href="#section-52">&#x00a7;</a>
               </div>
               <p>Pretty print a tree</p>
 
@@ -1207,33 +1231,20 @@ picks = random.choices</pre></div></div>
         </li>
         
         
-        <li id="section-52">
-            <div class="annotation">
-              
-              <div class="sswrap ">
-                <a class="ss" href="#section-52">&#x00a7;</a>
-              </div>
-              <h3 id="demos-4-tree">Demos 4 Tree</h3>
-
-            </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__tree</span>(<span class="hljs-params">file</span>):
-  <span class="hljs-string">&quot;:       demo active learning&quot;</span>
-  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
-  show(tree(data))</pre></div></div>
-            
-        </li>
-        
-        
         <li id="section-53">
             <div class="annotation">
               
               <div class="sswrap ">
                 <a class="ss" href="#section-53">&#x00a7;</a>
               </div>
-              <h2 id="stats">Stats</h2>
+              <h3 id="demos-4-tree">Demos 4 Tree</h3>
 
             </div>
+            
+            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__tree</span>(<span class="hljs-params">file</span>):
+  <span class="hljs-string">&quot;:         : demo tree learning&quot;</span>
+  data = Data(csv(doc(file) <span class="hljs-keyword">if</span> file <span class="hljs-keyword">else</span> lines(EXAMPLE)))
+  show(tree(data))</pre></div></div>
             
         </li>
         
@@ -1244,20 +1255,9 @@ picks = random.choices</pre></div></div>
               <div class="sswrap ">
                 <a class="ss" href="#section-54">&#x00a7;</a>
               </div>
-              <p>Table pretty print (aligns columns).</p>
+              <h2 id="stats">Stats</h2>
 
             </div>
-            
-            <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">report</span>(<span class="hljs-params">rows, head, decs=<span class="hljs-number">2</span></span>):
-  w=[<span class="hljs-number">0</span>] * <span class="hljs-built_in">len</span>(head)
-  Str  = <span class="hljs-keyword">lambda</span> x   : <span class="hljs-string">f&quot;<span class="hljs-subst">{x:.{decs}</span>f}&quot;</span>     <span class="hljs-keyword">if</span> <span class="hljs-built_in">type</span>(x) <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span> <span class="hljs-keyword">else</span> <span class="hljs-built_in">str</span>(x)
-  say  = <span class="hljs-keyword">lambda</span> w,x : <span class="hljs-string">f&quot;<span class="hljs-subst">{x:&gt;{w}</span>.<span class="hljs-subst">{decs}</span>f}&quot;</span> <span class="hljs-keyword">if</span> <span class="hljs-built_in">type</span>(x) <span class="hljs-keyword">is</span> <span class="hljs-built_in">float</span> <span class="hljs-keyword">else</span> <span class="hljs-string">f&quot;<span class="hljs-subst">{x:&gt;{w}</span>}&quot;</span>
-  says = <span class="hljs-keyword">lambda</span> row : <span class="hljs-string">&#x27; |  &#x27;</span>.join([say(w1, x) <span class="hljs-keyword">for</span> w1, x <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(w, row)])
-  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> [head]+rows: 
-    w = [<span class="hljs-built_in">max</span>(b4, <span class="hljs-built_in">len</span>(Str(x))) <span class="hljs-keyword">for</span> b4,x <span class="hljs-keyword">in</span> <span class="hljs-built_in">zip</span>(w,row)]
-  <span class="hljs-built_in">print</span>(says(head))
-  <span class="hljs-built_in">print</span>(<span class="hljs-string">&#x27; |  &#x27;</span>.join(<span class="hljs-string">&#x27;-&#x27;</span>*(w1) <span class="hljs-keyword">for</span> w1 <span class="hljs-keyword">in</span> w))
-  <span class="hljs-keyword">for</span> row <span class="hljs-keyword">in</span> rows: <span class="hljs-built_in">print</span>(says(row))</pre></div></div>
             
         </li>
         
@@ -1268,8 +1268,8 @@ picks = random.choices</pre></div></div>
               <div class="sswrap ">
                 <a class="ss" href="#section-55">&#x00a7;</a>
               </div>
-              <p>Non-parametric significance test from Chpt20, doi.org/10.1201/9780429246593
-2 distributions are the same if, often, we <code>_see</code> differences just by chance.
+              <p>Non-parametric significance test from Chp20,doi.org/10.1201/9780429246593.
+Distributions are the same if, often, we <code>_see</code> differences just by chance.
 We center both samples around the combined mean to simulate
 what data might look like if vals1 and vals2 came from the same population.</p>
 
@@ -1367,6 +1367,7 @@ what data might look like if vals1 and vals2 came from the same population.</p>
             </div>
             
             <div class="content"><div class='highlight'><pre><span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__stats</span>(<span class="hljs-params">_</span>):
+   <span class="hljs-string">&quot;:        : cliffs vs boostrap demo&quot;</span>
    <span class="hljs-keyword">def</span> <span class="hljs-title function_">c</span>(<span class="hljs-params">b</span>): <span class="hljs-keyword">return</span> <span class="hljs-number">1</span> <span class="hljs-keyword">if</span> b <span class="hljs-keyword">else</span> <span class="hljs-number">0</span>
    b4 = [random.gauss(<span class="hljs-number">1</span>,<span class="hljs-number">1</span>)+ random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">1</span>)**<span class="hljs-number">0.5</span> <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">59</span>)]
    d=<span class="hljs-number">0.5</span>
@@ -1378,15 +1379,17 @@ what data might look like if vals1 and vals2 came from the same population.</p>
      d += <span class="hljs-number">0.05</span>
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__rank</span>(<span class="hljs-params">_</span>):
-   n=<span class="hljs-number">100</span>
-   d=<span class="hljs-built_in">dict</span>(asIs  = [random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
+  <span class="hljs-string">&quot;:         : demp, Scott-Knott, ranking distributions&quot;</span>
+  n=<span class="hljs-number">100</span>
+  d=<span class="hljs-built_in">dict</span>(asIs  = [random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
           copy1 = [random.gauss(<span class="hljs-number">20</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
           now1  = [random.gauss(<span class="hljs-number">20</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
           copy2 = [random.gauss(<span class="hljs-number">40</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
           now2  = [random.gauss(<span class="hljs-number">40</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)])
-   [<span class="hljs-built_in">print</span>(o(rank=num.rank, mu=num.mu)) <span class="hljs-keyword">for</span> num <span class="hljs-keyword">in</span> scottKnott(d).values()]
+  [<span class="hljs-built_in">print</span>(o(rank=num.rank, mu=num.mu)) <span class="hljs-keyword">for</span> num <span class="hljs-keyword">in</span> scottKnott(d).values()]
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__rank2</span>(<span class="hljs-params">_</span>):
+   <span class="hljs-string">&quot;:        : check if Scott-Knott handles 2 distrubitions&quot;</span>
    n=<span class="hljs-number">100</span>
    d=<span class="hljs-built_in">dict</span>(asIs  = [random.gauss(<span class="hljs-number">10</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)],
           copy1 = [random.gauss(<span class="hljs-number">20</span>,<span class="hljs-number">1</span>) <span class="hljs-keyword">for</span> _ <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(n)])
@@ -1464,11 +1467,11 @@ what data might look like if vals1 and vals2 came from the same population.</p>
         <span class="hljs-keyword">for</span> m <span class="hljs-keyword">in</span> re.finditer(<span class="hljs-string">r&quot;-\w+\s+(\w+)[^\(]*\(\s*([^)]+)\s*\)&quot;</span>, __doc__)})
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__the</span>(<span class="hljs-params">_</span>): 
-  <span class="hljs-string">&quot;:        show config&quot;</span>
+  <span class="hljs-string">&quot;:         : show config&quot;</span>
   <span class="hljs-built_in">print</span>(the)
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg__all</span>(<span class="hljs-params">_</span>): 
-  <span class="hljs-string">&quot;:        run all demos&quot;</span>
+  <span class="hljs-string">&quot;:         : run all demos&quot;</span>
   <span class="hljs-keyword">for</span> s,fn <span class="hljs-keyword">in</span> <span class="hljs-built_in">globals</span>().items():
     <span class="hljs-keyword">if</span> s.startswith(<span class="hljs-string">&quot;eg_&quot;</span>) <span class="hljs-keyword">and</span> s!=<span class="hljs-string">&quot;eg__all&quot;</span>:
       <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;\n<span class="hljs-subst">{<span class="hljs-string">&#x27;-&#x27;</span>*<span class="hljs-number">78</span>}</span>\n## <span class="hljs-subst">{s}</span>\n&quot;</span>)
@@ -1477,8 +1480,8 @@ what data might look like if vals1 and vals2 came from the same population.</p>
       <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;```\n&quot;</span>)
 
 <span class="hljs-keyword">def</span> <span class="hljs-title function_">eg_h</span>(<span class="hljs-params">_</span>): 
-  <span class="hljs-string">&quot;:        show help&quot;</span>
-  <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;\n&quot;</span>+__doc__);
+  <span class="hljs-string">&quot;:         : show help&quot;</span>
+  <span class="hljs-built_in">print</span>(__doc__+<span class="hljs-string">&quot;\nDemos:&quot;</span>);
   <span class="hljs-keyword">for</span> s,fn <span class="hljs-keyword">in</span> <span class="hljs-built_in">globals</span>().items():
     <span class="hljs-keyword">if</span> s.startswith(<span class="hljs-string">&quot;eg_&quot;</span>):
       <span class="hljs-built_in">print</span>(<span class="hljs-string">f&quot;  <span class="hljs-subst">{s[<span class="hljs-number">2</span>:].replace(<span class="hljs-string">&quot;_&quot;</span>,<span class="hljs-string">&quot;-&quot;</span>):6s}</span> <span class="hljs-subst">{(fn.__doc__ <span class="hljs-keyword">or</span> <span class="hljs-string">&quot; &quot;</span>)[<span class="hljs-number">1</span>:]}</span>&quot;</span>)</pre></div></div>
