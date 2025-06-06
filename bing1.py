@@ -283,10 +283,6 @@ def eg__cols(_):
 
 ### Update ---------------------------------------------------------------------
 
-# Subtraction means add, with a negative increment  
-def sub(i,v,purge=False): 
-  return add(i, v, inc= -1, purge=purge)
-
 # Add `v` to `i`. Skip unknowns ("?"), return v.
 def add(i,v, inc=1, purge=False): # -> v
   def _sym(sym,s): sym.has[s] = inc + sym.has.get(s,0)
@@ -314,6 +310,10 @@ def add(i,v, inc=1, purge=False): # -> v
     i.n += inc
     (_num if i.it is Num else (_sym if i.it is Sym else _data))(i,v)
   return v
+
+# Subtraction means add, with a negative increment  
+def sub(i,v,purge=False): 
+  return add(i, v, inc= -1, purge=purge)
 
 ### Query 
 
@@ -441,17 +441,17 @@ def pdf(col,v, prior=0):
   z = (v - col.mu) ** 2 / var
   return min(1, max(0, math.exp(-z) / (2 * math.pi * var) ** 0.5))
 
-# Return the `data` in `datas` that likes `row` the most.
-def likes(datas, row):
-  n = sum(data.n for data in datas)
-  return max(datas, key=lambda data: like(data, row, n, len(datas)))
-
 # Report how much `data` like `row`.
 def like(data, row, nall=2, nh=100):
   prior = (data.n + the.k) / (nall + the.k*nh)
   tmp = [pdf(c,row[c.at],prior) 
          for c in data.cols.x if row[c.at] != "?"]
   return sum(math.log(n) for n in tmp + [prior] if n>0)    
+
+# Return the `data` in `datas` that likes `row` the most.
+def likes(datas, row):
+  n = sum(data.n for data in datas)
+  return max(datas, key=lambda data: like(data, row, n, len(datas)))
 
 # Split rows to best,rest. Label row that's e.g. max best/rest. Repeat.
 def acquires(data):
@@ -472,14 +472,14 @@ def acquires(data):
   rest      = clone(data, done[cut:])
   while len(todo) > 2 and n < the.Stop:
     n      += 1
-    hi, *lo = sorted(todo[:the.Few*2], # runs 100 times faster if only sort a Few
+    hi, *lo = sorted(todo[:the.Few*2], #if only sort a few then 100 times faster
                     key=_guess, reverse=True)
     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
     add(bestrest, add(best, hi))
     best._rows = ysort(bestrest)
     if len(best._rows) >= round(n**the.Guess):
-       add(rest, # runs 100 times faster if incremental update
-           sub(best,  best._rows.pop(-1))) 
+      add(rest, # if incremental update, runs 100 times faster
+        sub(best,  best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
 
 #### Demos 4 Bayes
@@ -616,7 +616,7 @@ def cliffs(vals1,vals2):
 # Recurive bi-cluster of treatments. Stops when splits are the same.
 def scottKnott(rxs, eps=0, reverse=False):
   def _same(a,b): return cliffs(a,b) and bootstrap(a,b)
-  def _flat(rxs): return  [x for _,_,_,lst in rxs for x in lst]
+  def _flat(rxs): return [x for _,_,_,lst in rxs for x in lst]
 
   def _cut(rxs):
     out, most = None,0
@@ -637,7 +637,7 @@ def scottKnott(rxs, eps=0, reverse=False):
       if (cut := _cut(rxs)):
         left, right = rxs[:cut], rxs[cut:]
         if not _same(_flat(left), _flat(right)): 
-          return _div(right, _div(left, rank) + 1)
+          return _div(right, _div(left,rank)+1)
     for row,_,_,_ in rxs: row.rank = rank
     return rank
 
