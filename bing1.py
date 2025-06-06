@@ -147,10 +147,6 @@ def shuffle(lst):
   random.shuffle(lst)
   return lst
 
-#### Bulk inits
-def adds(i, src): 
-  [add(i,x) for x in src]; return i
-
 #### Read iterators.
 
 # Iterate over lines in a file.
@@ -227,7 +223,7 @@ def eg__csv(_):
 # Summary of numeric columns.
 def Num(inits=[],at=0, txt=" ", rank=0):
   return adds(o(it=Num, 
-                n=0,       ## items seen
+                n=0,       ## items seen  
                 at=at,     ## column position
                 txt=txt,   ## column name
                 mu=0,      ## mean
@@ -314,6 +310,10 @@ def add(i,v, inc=1, purge=False): # -> v
 # Subtraction means add, with a negative increment  
 def sub(i,v,purge=False): 
   return add(i, v, inc= -1, purge=purge)
+
+# Bulk additions
+def adds(i, src): 
+  [add(i,x) for x in src]; return i
 
 ### Query 
 
@@ -711,7 +711,7 @@ def run(fn,x=None):
   try:  
     random.seed(the.rseed)
     fn(x)
-  except Exception as e:
+  except Exception as _:
     tb = traceback.format_exc().splitlines()[4:]
     return sys.stdout.write("\n".join(tb) + "\n")
 
