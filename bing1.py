@@ -7,7 +7,7 @@ Options, with (defaults):
 
   -f   file       : data name (../moot/optimize/misc/auto93.csv)
   -r   rseed      : set random number rseed (123456781)
-  -F   Few        : a few rows to explore (64)
+  -F   Few        : a few rows to explore (128)
   -l   leaf       : tree learning: min leaf size (2)
   -p   p          : distance calcs: set Minkowski coefficient (2)
 
@@ -401,6 +401,9 @@ def xdist(data, row1, row2):
 
   return minkowski(_aha(c, row1[c.at], row2[c.at]) for c in data.cols.x)
 
+def xdists(data, row1, rows=None):
+  return sorted(rows or data._rows, key=lambda row2: xdist(data,row1,row2))
+
 # K-means plus plus: k points, usually D^2 distance from each other.
 def kpp(data, k=None, rows=None):
   k = k or the.Stop
@@ -433,8 +436,28 @@ def eg__line(file):
   line = lambda: ydist(data, ysort(data,kpp(data))[0])
   print(cat(sorted([line() for _ in range(20)])))
 
-### Bayes ----------------------------------------------------------------------
+### Landscape ------------------------------------------------------------------
+def project(data, row, a, b, C=None):
+  C = C or xdist(data,a,b)
+  A,B = xdist(data,row,a), xdist(data,row,b)
+  return (A*A + C*C - B*B) / (2*C + 1/big)
 
+def fmapBudget(n,b): return 1 - (1/n)**(2/b)
+
+def fmap(data, rows=None, reject=0.5):
+  rows = rows or data._rows
+  one, *some = shuffle(rows)
+  some = some[:the.Few]
+  far  = int(0.9 *len(some))
+  a = xdists(data, one, some)[far]
+  b = xdists(data, a, some)[far]
+  if ydist(data,a) < ydist(data,b): east,west = west,east
+  C = xdist(data, east,west)
+  for i,row in enumerate(sorted(rows,key=lambda row: project(data,row,a,b,C))):
+    if i < reject*len(rows): 
+      yield row
+
+### Bayes ----------------------------------------------------------------------
 # How probable is it that  `v` belongs to a column?
 def pdf(col,v, prior=0):
   if col.it is Sym:
@@ -681,32 +704,44 @@ def eg__rank2(_):
    [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(rxs).values()]
 
 def eg__compare(_):
-  repeats=20
+  repeats = 20
   data = Data(csv(doc(the.file)))
-  def Best(F): 
+  ys = Num(ydist(data,row) for row in data._rows)
+
+  def Best(f): 
     random.shuffle(data._rows)
-    return ydist(data, ysort(data,F())[0]) 
-  rxs={}
-  for the.Stop in [10,20,30,40,50,100,200]:
-    for rx,f in (("line",lambda: kpp(data)),
-                 ("lite",lambda: acquires(data).best._rows),
-                 ("rand",lambda: random.choices(data._rows, k=the.Stop))):
-      rxs[(rx, the.Stop)] = [Best(f) for _ in range(repeats)]
-  ys   = Num(ydist(data,row) for row in data._rows)
-  out = scottKnott(rxs,eps=ys.sd*0.35)
-  best = [x for x in out.values() if x.rank==0]
-  av   = sum(x.mu*x.n for x in best) / sum(x.n for x in best)
-  win  = int(100*(1 - (av - ys.lo)/(ys.mu - ys.lo)))
-  say(win,"| ",len(data._rows), len(data.cols.x), len(data.cols.y),int(100*ys.mu),sep=",")
-  b4 = None
-  for k in sorted(out.keys(),key=lambda x: (x[0], x[1])):
-    if b4!=k[0]: say(",|",out[k].txt[0])
-    rank= chr(65 + out[k].rank)
-    mu = int(out[k].mu*100)
-    say(f",{rank} {mu:2}") 
-    b4=k[0]
-  print(",|",re.sub("(.*/|.csv)","",the.file),flush=True)
-     
+    return ydist(data, ysort(data, f())[0]) 
+
+  def experiment():
+    out = {}
+    for stop in [10,20,30,40,50,100,200]:
+      the.Stop = stop
+      methods = {
+        "line": lambda: kpp(data),
+        "lite": lambda: acquires(data).best._rows,
+        "rand": lambda: random.choices(data._rows, k=stop)}
+      for name, f in methods.items():
+        out[(name, stop)] = [Best(f) for _ in range(repeats)]
+    return out
+
+  def summarize(rxs): 
+    return scottKnott(rxs, eps=ys.sd * 0.35)
+
+  def report(out):
+    best = [x for x in out.values() if x.rank == 0]
+    av = sum(x.mu * x.n for x in best) / sum(x.n for x in best)
+    win = int(100 * (1 - (av - ys.lo) / (ys.mu - ys.lo)))
+    say(win, "|", len(data._rows), len(data.cols.x), 
+        len(data.cols.y), int(100 * ys.mu), sep=",")
+    last = None
+    for k in sorted(out, key=lambda x: (x[0], x[1])):
+      if last != k[0]: say(",|", out[k].txt[0])
+      say(f", {chr(65 + out[k].rank)} {int(out[k].mu * 100):2}")
+      last = k[0]
+    print(",|", re.sub("(.*/|.csv)", "", the.file), flush=True)
+
+  report(summarize(experiment()))
+    
 ### Command-Line --------------------------------------------------------------
 
 # Update slot `k` in dictionary `d` from CLI flags matching `k`.
