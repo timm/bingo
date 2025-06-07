@@ -142,6 +142,9 @@ big = 1E32
 pick = random.choice
 picks = random.choices
 
+def fyi(*l,**kw,): print(*l, end="", flush=True, file=sys.stderr, **kw)
+def say(*l,**kw,): print(*l, end="", flush=True, **kw)
+
 #### Shuffle
 def shuffle(lst):
   random.shuffle(lst)
@@ -472,14 +475,15 @@ def acquires(data):
   rest      = clone(data, done[cut:])
   while len(todo) > 2 and n < the.Stop:
     n      += 1
-    hi, *lo = sorted(todo[:the.Few*2], #if only sort a few then 100 times faster
+    hi, *lo = sorted(todo[:the.Few*2], # just sort a few? then 100 times faster
                     key=_guess, reverse=True)
     todo    = lo[:the.Few] + todo[the.Few*2:] + lo[the.Few:]
     add(bestrest, add(best, hi))
     best._rows = ysort(bestrest)
     if len(best._rows) >= round(n**the.Guess):
-      add(rest, # if incremental update, runs 100 times faster
-        sub(best,  best._rows.pop(-1))) 
+      add(rest, # if incremental update, then runs 100 times faster
+        sub(best,  
+            best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
 
 #### Demos 4 Bayes
@@ -677,24 +681,32 @@ def eg__rank2(_):
    [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(rxs).values()]
 
 def eg__compare(_):
+  repeats=20
   data = Data(csv(doc(the.file)))
   def Best(F): 
     random.shuffle(data._rows)
     return ydist(data, ysort(data,F())[0]) 
   rxs={}
-  for the.Stop in [6,12,24]:
+  for the.Stop in [10,20,30,40,50,100,200]:
     for rx,f in (("line",lambda: kpp(data)),
                  ("lite",lambda: acquires(data).best._rows),
                  ("rand",lambda: random.choices(data._rows, k=the.Stop))):
-      print((rx,the.Stop), file=sys.stderr)
-      rxs[(rx, the.Stop)] = [Best(f) for _ in range(20)]
-  ranked = scottKnott(rxs)
-  order = sorted(ranked.keys(),key=lambda x: (x[0], x[1]))
-  print([(ranked[k].mu, chr(97+ranked[k].rank)) for k in order])
+      rxs[(rx, the.Stop)] = [Best(f) for _ in range(repeats)]
+  ys   = Num(ydist(data,row) for row in data._rows)
+  out = scottKnott(rxs,eps=ys.sd*0.35)
+  best = [x for x in out.values() if x.rank==0]
+  av   = sum(x.mu*x.n for x in best) / sum(x.n for x in best)
+  win  = int(100*(1 - (av - ys.lo)/(ys.mu - ys.lo)))
+  say(win,"| ",len(data._rows), len(data.cols.x), len(data.cols.y),int(100*ys.mu),sep=",")
+  b4 = None
+  for k in sorted(out.keys(),key=lambda x: (x[0], x[1])):
+    if b4!=k[0]: say(",|",out[k].txt[0])
+    rank= chr(65 + out[k].rank)
+    mu = int(out[k].mu*100)
+    say(f",{rank} {mu:2}") 
+    b4=k[0]
+  print(",|",re.sub("(.*/|.csv)","",the.file),flush=True)
      
-  # [print(o(rank=chr(97+num.rank), txt=num.txt, mu=num.mu)) 
-  #        for num in ranked]
-
 ### Command-Line --------------------------------------------------------------
 
 # Update slot `k` in dictionary `d` from CLI flags matching `k`.
@@ -708,12 +720,14 @@ def cli(d):
 
 # Reset seed before running. Crashes print stack, but keep going.
 def run(fn,x=None):
+  RED = '\033[31m'
+  RESET = '\033[0m'
   try:  
     random.seed(the.rseed)
     fn(x)
   except Exception as _:
     tb = traceback.format_exc().splitlines()[4:]
-    return sys.stdout.write("\n".join(tb) + "\n")
+    return sys.stdout.write("\n".join([f"{RED}{x}{RESET}" for x in tb]) + "\n")
 
 # Geneate options struct from top-of-file string.
 the = o(**{m[1]: atom(m[2])

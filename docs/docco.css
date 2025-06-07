@@ -519,6 +519,7 @@ pre .hljs-tex .hljs-formula {
 p,h4   { text-align:right; }
 pre { font-size: small; } 
 h3,h4  { text-transform: none;       }
+h4 { text-align: right; }
 h2  { border-top: 1px solid #CCC; }
 
  body {

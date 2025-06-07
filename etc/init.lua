@@ -21,9 +21,12 @@ vim.opt.visualbell = true
 vim.opt.wildmenu = true
 vim.opt.wildmode = "list:longest,full"
 vim.opt.smartindent = true
-vim.opt.wrap = false
 vim.opt.title = true
 vim.opt.clipboard = "unnamedplus"
+
+vim.opt.wrap = true
+vim.opt.linebreak = true   -- wrap at word boundaries
+vim.opt.breakindent = true -- preserve indent on wrapped lines
 
 vim.o.sidescrolloff = 999
 vim.o.sidescroll = 1
