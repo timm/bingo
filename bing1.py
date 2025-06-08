@@ -17,9 +17,10 @@ Bayes:
 
 Active learning:
   -A   Acq        : xploit or xplore or adapt (xploit)  
+  -G   Guess      : division best and rest (0.5)
   -s   start      : guesses, initial (4)
   -S   Stop       : guesses, max (20)
-  -G   Guess      : division best and rest (0.5)
+  -T   Test       : test guesses (10)
 
 Stats:
   -B   Boots      : significance threshold (0.95)
@@ -446,8 +447,8 @@ def fmap(data, rows):
   one, *some = shuffle(rows)
   some = some[:the.Few]
   far  = int(0.9 *len(some))
-  a = xdists(data, one, some)[far]
-  b = xdists(data, a, some)[far]
+  a    = xdists(data, one, some)[far]
+  b    = xdists(data, a, some)[far]
   if ydist(data,a) > ydist(data,b): a,b = b,a
   C = xdist(data, a,b)
   return sorted(rows,key=lambda row: abs(project(data,row,a,b,C)))
@@ -525,6 +526,11 @@ def acquires(data):
         sub(best,  
             best._rows.pop(-1))) 
   return o(best=best, rest=rest, test=todo)
+
+def acquired(data):
+  a = acquires(data)
+  t = tree(clone(data, a.best._rows + a.rest._rows))
+  return sorted(a.test, key=lambda z:leaf(t,z).ys.mu)[:the.Test]
 
 #### Demos 4 Bayes
 def eg__bayes(file):
@@ -631,9 +637,12 @@ def show(data, key=lambda z:z.ys.mu):
 def eg__tree(_):
   ":         : demo tree learning"
   data = Data(csv(doc(the.file)))
-  print(1111,the.file)
-  tmp = acquires(data)
-  show(tree(clone(data, tmp.best._rows + tmp.rest._rows)))
+  print(the.file)
+  a = acquires(data)
+  print(ydist(data, a.best._rows[0]))
+  t = tree(clone(data, a.best._rows + a.rest._rows))
+  guess = sorted(a.test, key=lambda z:leaf(t,z).ys.mu)[:the.Test]
+  print(sorted([ydist(data,row) for row in guess])[0])
 
 ### Stats ---------------------------------------------------------------------
 
@@ -720,10 +729,14 @@ def eg__rank(_):
 
 def eg__rank2(_):
    ":        : check if Scott-Knott handles 2 distrubitions"
-   n=100
-   rxs=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
-          copy1 = [random.gauss(20,1) for _ in range(n)])
+   n   = 100
+   rxs = dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+              copy1 = [random.gauss(20,1) for _ in range(n)])
    [print(o(rank=num.rank, mu=num.mu)) for num in scottKnott(rxs).values()]
+
+def eg__acquired(_):
+  data = Data(csv(doc(the.file)))
+  return acquired(data)
 
 def eg__landscapes(_):
   data = Data(csv(doc(the.file)))
@@ -739,7 +752,7 @@ def eg__compare(_):
     treatments = {
       "line": lambda: kpp(data),
       "lite": lambda: acquires(data).best._rows,
-      "good": lambda: landscapes(data),
+      "guess": lambda: acquired(data),
       "rand": lambda: random.choices(data._rows, k=stop)}
     for name, f in treatments.items():
       random.shuffle(data._rows)
