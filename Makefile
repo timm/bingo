@@ -112,6 +112,9 @@ buckets: ../moot/optimize/[bchmp]*/*.csv
 acquires: ../moot/optimize/[bchmp]*/*.csv
 	$(foreach f,$^, (python3 bingo.py -f $f --acquires &); )
 
+trees: ../moot/optimize/[bchmp]*/*.csv
+	$(foreach f,$^, (python3 bing1.py -f $f --tree);) 
+
 rq2: ../moot/optimize/[bchmp]*/*.csv
 	mkdir -p ~/tmp
 	{ $(foreach f,$^, (python3 bing1.py -f $f --compare &);) } | tee ~/tmp/$@.out

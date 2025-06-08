@@ -303,7 +303,7 @@ def add(i,v, inc=1, purge=False): # -> v
       d       = n - num.mu
       num.mu += inc * (d / num.n)
       num.m2 += inc * (d * (n - num.mu))
-      num.sd  = 0 if num.n <=2 else (num.m2/(num.n - 1)) ** .5
+      num.sd  = 0 if num.n <=2 else (max(0,num.m2)/(num.n - 1)) ** .5
 
   if v != "?": 
     i.n += inc
@@ -569,7 +569,7 @@ def cuts(col,rows,Y,Klass):
     for x, y in sorted(xys, key=lambda xy: xy[0]):
       if x != b4:
         if the.leaf <= lhs.n <= len(xys) - the.leaf:
-          tmp = (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
+          tmp =  (lhs.n * lhs.sd + rhs.n * rhs.sd) / len(xys)
           if tmp < xpect:
             xpect, out = tmp, [("<=", num.at, b4), (">", num.at, b4)]
       add(lhs, sub(rhs,y))
@@ -610,25 +610,30 @@ def leaf(data1,row):
 # Pretty print a tree
 def show(data, key=lambda z:z.ys.mu):
   stats = data.ys
-  win = lambda x: 100-int(100*(x-stats.lo)/(stats.mu - stats.lo))
+  win = lambda x: int(100*(1 - ((x-stats.lo)/(stats.mu - stats.lo))))
   print(f"{'d2h':>4} {'win':>4} {'n':>4}  ")
   print(f"{'----':>4} {'----':>4} {'----':>4}  ")
+  ats={}
   for lvl, node in nodes(data, key=key):
     leafp = len(node.kids)==0
     post = ";" if leafp else ""
     xplain = ""
     if lvl > 0:
       op,at,y = node.how
+      ats[at] = 1
       xplain = f"{data.cols.all[at].txt} {op} {y}"
     indent = (lvl - 1) * "|  "
     print(f"{node.ys.mu:4.2f} {win(node.ys.mu):4} {node.n:4}    "
           f"{indent}{xplain}{post}")
+  print(', '.join(sorted([data.cols.names[at] for at in ats])))
  
 #### Demos 4 Tree
-def eg__tree(file):
+def eg__tree(_):
   ":         : demo tree learning"
-  data = Data(csv(doc(file) if file else lines(EXAMPLE)))
-  show(tree(data))
+  data = Data(csv(doc(the.file)))
+  print(1111,the.file)
+  tmp = acquires(data)
+  show(tree(clone(data, tmp.best._rows + tmp.rest._rows)))
 
 ### Stats ---------------------------------------------------------------------
 
@@ -706,7 +711,7 @@ def eg__stats(_):
 def eg__rank(_):
   ":         : demp, Scott-Knott, ranking distributions"
   n=100
-  rxs=dict(asIs  = [random.gauss(10,1) for _ in range(n)],
+  rxs=dict(asIs = [random.gauss(10,1) for _ in range(n)],
           copy1 = [random.gauss(20,1) for _ in range(n)],
           now1  = [random.gauss(20,1) for _ in range(n)],
           copy2 = [random.gauss(40,1) for _ in range(n)],
