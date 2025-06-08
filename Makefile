@@ -117,9 +117,9 @@ rq2: ../moot/optimize/[bchmp]*/*.csv
 	{ $(foreach f,$^, (python3 bing1.py -f $f --compare &);) } | tee ~/tmp/$@.out
 
 
-rq3report:
+rq2report:
 	cat ~/tmp/rq2.out | sort -n -t,  \
-	| gawk -F, -f etc/rq3report.awk  \
+	| gawk -F, -f etc/rq2report.awk  \
 	| column -s, -t \
 	| grep --color "A"
 
