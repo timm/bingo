@@ -761,7 +761,7 @@ def eg__compare(_):
 
 def report(data, rxs):
   ys = Num(ydist(data,row) for row in data._rows)
-  out = scottKnott(rxs, eps=ys.sd * 0.2)
+  out = scottKnott(rxs, eps=ys.sd * 0.35)
 
   # average win in the top-ranked items
   best = [x for x in out.values() if x.rank == 0]
