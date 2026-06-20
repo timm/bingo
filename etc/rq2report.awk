@@ -1,5 +1,5 @@
 BEGIN { FS=OFS="," }
-      { print
+NF>2      { print
         for(i=1;i<=NF;i++)  n[i] +=  $i ~ /A/ }          
 END   { s=sep=""
         for(i=1;i<=NF;i++) {
